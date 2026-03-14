@@ -85,7 +85,7 @@ export const AdminDashboard: React.FC = () => {
   const [parsedData, setParsedData] = useState<DriverData | null>(null);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'generate' | 'history'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'generate' | 'history' | 'idealizador'>('generate');
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -986,13 +986,6 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
 
             <nav className="flex-1 space-y-2">
               <button 
-                onClick={() => setActiveTab('dashboard')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'dashboard' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
-              >
-                <LayoutDashboard className="w-5 h-5" />
-                Painel de Controle
-              </button>
-              <button 
                 onClick={() => setActiveTab('generate')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'generate' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
               >
@@ -1005,6 +998,13 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
               >
                 <History className="w-5 h-5" />
                 Histórico de Termos
+              </button>
+              <button 
+                onClick={() => setActiveTab('dashboard')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'dashboard' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+              >
+                <LayoutDashboard className="w-5 h-5" />
+                Painel de Controle
               </button>
               <button 
                 onClick={() => setActiveTab('idealizador')}
@@ -1043,7 +1043,7 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
           <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-8">
             <div>
               <h2 className="text-xl lg:text-3xl font-bold text-slate-900 tracking-tight">
-                {activeTab === 'dashboard' ? 'Painel de Controle' : activeTab === 'generate' ? 'Importar Dados' : activeTab === 'idealizador' ? 'Idealizador' : 'Histórico de Registros'}
+                {activeTab === 'dashboard' ? 'Painel de Controle' : activeTab === 'generate' ? 'Importar Dados' : activeTab === 'idealizador' ? 'Idealizador' : 'Histórico de Termos'}
               </h2>
               <p className="text-slate-500 text-xs lg:text-sm mt-1">
                 {activeTab === 'dashboard' ? 'Visão geral das assinaturas e operações.' : activeTab === 'generate' ? 'Processe os dados da planilha para criar um link de assinatura.' : activeTab === 'idealizador' ? 'Sobre a criação do aplicativo e nossa visão.' : 'Acompanhe e gerencie todos os termos emitidos.'}
