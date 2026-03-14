@@ -16,7 +16,7 @@ import {
   Lock
 } from 'lucide-react';
 import { SignaturePad } from './SignaturePad';
-import { RouteMapViewer } from './RouteMapViewer';
+import { RouteMap } from './RouteMap';
 import { Contract } from '../types';
 
 const CHECKLIST_ITEMS = [
@@ -450,21 +450,9 @@ export const DriverSignature: React.FC = () => {
                       <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Destino</span>
                       <span className="text-sm font-bold text-indigo-900">{contract.data.destino || 'Gov. Celso Ramos/SC'}</span>
                     </div>
-
-                    <div className="mt-6">
-                      <RouteMapViewer origem={contract.data.origem || 'Santa Luzia/MG'} destino={contract.data.destino || 'Gov. Celso Ramos/SC'} />
-                    </div>
                     
-                    <div className="mt-6 space-y-2">
-                      <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest">Itinerário Sugerido</p>
-                      <div className="grid grid-cols-1 gap-1">
-                        {[contract.data.origem || "Santa Luzia/MG", "Carmópolis de Minas/MG", "Pouso Alegre/MG", "Bragança Paulista/SP", "Jarinu/SP", "Juquitiba/SP", "São José dos Pinhais/PR", "Joinville/SC", contract.data.destino || "Gov. Celso Ramos/SC"].map((city, i) => (
-                          <div key={i} className="flex items-center gap-2 text-[11px] text-indigo-700">
-                            <div className="w-1 h-1 rounded-full bg-indigo-300" />
-                            {city}
-                          </div>
-                        ))}
-                      </div>
+                    <div className="mt-8">
+                      <RouteMap origin={contract.data.origem || 'Santa Luzia/MG'} destination={contract.data.destino || 'Gov. Celso Ramos/SC'} />
                     </div>
 
                     <div className="mt-6 space-y-2">
