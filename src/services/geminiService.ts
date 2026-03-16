@@ -1,9 +1,17 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { DriverData } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+// CORREÇÃO AQUI: Mudamos de process.env para import.meta.env
+// E usamos o nome exato que está nos seus Secrets: VITE_GEMINI_API_KEY
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+const ai = new GoogleGenAI({ apiKey: apiKey });
 
 export async function parseDriverLine(text: string): Promise<DriverData> {
+  // Verificação de segurança para te avisar no console se a chave sumir de novo
+  if (!apiKey) {
+    console.error("ERRO: A variável VITE_GEMINI_API_KEY não foi encontrada!");
+  }
+
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: `Extraia as informações desta linha de planilha de transporte para um objeto JSON. 
@@ -59,6 +67,6 @@ export async function parseDriverLine(text: string): Promise<DriverData> {
     return JSON.parse(response.text || "{}");
   } catch (e) {
     console.error("Failed to parse Gemini response", e);
-    return {};
+    return {} as DriverData;
   }
 }
