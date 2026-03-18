@@ -66,19 +66,19 @@ export const DriverSignature: React.FC = () => {
       
       try {
         const { data, error } = await supabase
-          .from('contracts') // Tabela correta
+          .from('contracts') // Nome exato
           .select('*')
           .eq('id', id)
           .single();
 
         if (error) throw error;
 
-        // Verifica se achou os dados e se a coluna 'Dados' existe
-        if (data && data.Dados) {
+        // Verifica se achou os dados e se a coluna 'data' existe
+        if (data && data.data) {
           // Adaptamos para o formato que o componente espera
           setContract({
             id: data.id,
-            data: data.Dados,
+            data: typeof data.data === 'string' ? JSON.parse(data.data) : data.data,
             signature: data.signature,
             signed_at: data.signed_at,
             created_at: data.created_at,

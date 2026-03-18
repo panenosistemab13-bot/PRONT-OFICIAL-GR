@@ -141,32 +141,30 @@ export const AdminDashboard: React.FC = () => {
 
     try {
       const extractedData = await parseDriverLine(inputText);
-      // Gera um ID único para o motorista
-      const generatedId = Math.random().toString(36).substring(2, 15);
+      // Gera um ID curto e único para o link
+      const generatedId = Math.random().toString(36).substring(2, 10);
 
       // 1. SALVAR NO SUPABASE
       const { error } = await supabase
-        .from('contracts') // Nome exato da tabela em minúsculo
+        .from('contracts') // Nome exato da tabela
         .insert([{ 
           id: generatedId, 
-          Dados: extractedData, // 'Dados' com D maiúsculo conforme o banco
-          onbase_status: false, // Valor padrão
-          created_at: new Date().toISOString() 
+          data: extractedData, // Nome exato da coluna
+          onbase_status: false // Valor padrão configurado
         }]);
 
-      if (error) {
-        console.error("Erro detalhado do Supabase:", error);
-        throw error;
-      }
+      if (error) throw error;
 
-      // 2. GERAR O LINK
+      // 2. GERAR O LINK PARA O MOTORISTA
       const url = `${window.location.origin}/sign/${generatedId}`;
       setGeneratedLink(url);
       setParsedData(extractedData);
+      alert("Sucesso! Link gerado.");
 
-    } catch (error) {
-      console.error("Erro completo:", error);
-      alert("Erro ao salvar no banco. Verifique o console (F12) para detalhes.");
+    } catch (error: any) {
+      console.error("Erro detalhado:", error);
+      // Alerta amigável baseado no erro PGRST205 que vimos antes
+      alert(`Erro ao salvar: ${error.message || "Verifique a conexão com o banco"}`);
     } finally {
       setLoading(false);
     }
