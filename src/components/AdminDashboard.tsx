@@ -140,36 +140,27 @@ export const AdminDashboard: React.FC = () => {
     setLoading(true);
     
     try {
-      // 1. O Gemini extrai os dados do texto
       const extractedData = await parseDriverLine(inputText);
-      
-      // 2. Gera o ID único para o link
       const id = Math.random().toString(36).substring(2, 15);
 
-      // 3. SALVAMENTO NO SUPABASE
-      // Note: 'Contratos' é o nome da tabela e 'Dados' é a coluna JSONB (conforme seu print)
+      // Enviando para a tabela e coluna em minúsculo
       const { error } = await supabase
-        .from('Contratos')
+        .from('contracts') // Nome atualizado da tabela
         .insert([{ 
           id: id, 
-          Dados: extractedData, // Usando 'Dados' com D maiúsculo conforme o banco
+          Dados: extractedData, // Mantenha 'Dados' com D maiúsculo se for assim que estiver na coluna
           created_at: new Date().toISOString() 
         }]);
 
-      if (error) {
-        console.error("Erro ao salvar no Supabase:", error);
-        alert("Erro no banco de dados: " + error.message);
-        return;
-      }
+      if (error) throw error;
 
-      // 4. Se salvou com sucesso, gera o link e mostra na tela
       const url = `${window.location.origin}/sign/${id}`;
       setGeneratedLink(url);
       setParsedData(extractedData);
 
     } catch (error) {
-      console.error("Erro geral no processamento:", error);
-      alert("Falha ao processar os dados. Verifique sua conexão.");
+      console.error("Erro:", error);
+      alert("Erro ao salvar no banco. Verifique a tabela 'contratos'.");
     } finally {
       setLoading(false);
     }
