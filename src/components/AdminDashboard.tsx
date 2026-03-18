@@ -138,29 +138,35 @@ export const AdminDashboard: React.FC = () => {
   const handleProcess = async () => {
     if (!inputText.trim()) return;
     setLoading(true);
-    
+
     try {
       const extractedData = await parseDriverLine(inputText);
-      const id = Math.random().toString(36).substring(2, 15);
+      // Gera um ID único para o motorista
+      const generatedId = Math.random().toString(36).substring(2, 15);
 
-      // Enviando para a tabela e coluna em minúsculo
+      // 1. SALVAR NO SUPABASE
       const { error } = await supabase
-        .from('contracts') // Nome atualizado da tabela
+        .from('contracts') // Nome exato da tabela em minúsculo
         .insert([{ 
-          id: id, 
-          Dados: extractedData, // Mantenha 'Dados' com D maiúsculo se for assim que estiver na coluna
+          id: generatedId, 
+          Dados: extractedData, // 'Dados' com D maiúsculo conforme o banco
+          onbase_status: false, // Valor padrão
           created_at: new Date().toISOString() 
         }]);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Erro detalhado do Supabase:", error);
+        throw error;
+      }
 
-      const url = `${window.location.origin}/sign/${id}`;
+      // 2. GERAR O LINK
+      const url = `${window.location.origin}/sign/${generatedId}`;
       setGeneratedLink(url);
       setParsedData(extractedData);
 
     } catch (error) {
-      console.error("Erro:", error);
-      alert("Erro ao salvar no banco. Verifique a tabela 'contratos'.");
+      console.error("Erro completo:", error);
+      alert("Erro ao salvar no banco. Verifique o console (F12) para detalhes.");
     } finally {
       setLoading(false);
     }

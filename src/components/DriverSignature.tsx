@@ -18,6 +18,7 @@ import {
 import { SignaturePad } from './SignaturePad';
 import { RouteMap } from './RouteMap';
 import { Contract } from '../types';
+import { supabase } from '../services/supabase';
 
 const CHECKLIST_ITEMS = [
   "O VEÍCULO APRESENTA-SE LIMPO E EM BOAS CONDIÇÕES DE ACESSO AO DEPÓSITO.",
@@ -61,18 +62,40 @@ export const DriverSignature: React.FC = () => {
 
   useEffect(() => {
     const fetchContract = async () => {
+      if (!id) return;
+      
       try {
-        const response = await fetch(`/api/contracts/${id}`);
-        if (!response.ok) throw new Error('Contrato não encontrado');
-        const data = await response.json();
-        setContract(data);
-        if (data.signature) setSigned(true);
-      } catch (err) {
+        const { data, error } = await supabase
+          .from('contracts') // Tabela correta
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+
+        // Verifica se achou os dados e se a coluna 'Dados' existe
+        if (data && data.Dados) {
+          // Adaptamos para o formato que o componente espera
+          setContract({
+            id: data.id,
+            data: data.Dados,
+            signature: data.signature,
+            signed_at: data.signed_at,
+            created_at: data.created_at,
+            onbase_status: data.onbase_status
+          }); 
+          if (data.signature) setSigned(true);
+        } else {
+          setError('Link inválido ou expirado.'); // Link inválido se não tiver a coluna
+        }
+      } catch (error) {
+        console.error("Erro ao carregar link:", error);
         setError('Link inválido ou expirado.');
       } finally {
         setLoading(false);
       }
     };
+
     fetchContract();
   }, [id]);
 
@@ -85,15 +108,18 @@ export const DriverSignature: React.FC = () => {
 
   const handleSign = async (signature: string) => {
     try {
-      const response = await fetch(`/api/contracts/${id}/sign`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ signature })
-      });
-      if (response.ok) {
-        setSigned(true);
-      }
+      const { error } = await supabase
+        .from('contracts')
+        .update({ 
+          signature, 
+          signed_at: new Date().toISOString() 
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+      setSigned(true);
     } catch (err) {
+      console.error("Erro ao salvar assinatura:", err);
       alert('Erro ao salvar assinatura.');
     }
   };
