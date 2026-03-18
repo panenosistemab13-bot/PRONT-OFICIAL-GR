@@ -137,21 +137,19 @@ export const AdminDashboard: React.FC = () => {
   const handleProcess = async () => {
     if (!inputText.trim()) return;
     setLoading(true);
-    
     try {
-      // 1. O Gemini processa o texto que você colou
+      // 1. O Gemini processa o texto
       const data = await parseDriverLine(inputText);
       setParsedData(data);
       
-      // 2. Cria um ID aleatório para o link
+      // 2. Cria o ID
       const id = Math.random().toString(36).substring(2, 15);
       
-      // 3. GERA O LINK IMEDIATAMENTE (O segredo para aparecer na Vercel)
+      // 3. GERA O LINK IMEDIATAMENTE (Importante!)
       const url = `${window.location.origin}/sign/${id}`;
       setGeneratedLink(url);
 
-      // 4. Tenta salvar no banco de dados (API)
-      // Se a API falhar, o link continuará na tela porque o passo 3 veio antes
+      // 4. Tenta salvar (Se a API falhar, o link já apareceu no passo anterior)
       await fetch('/api/contracts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -159,8 +157,7 @@ export const AdminDashboard: React.FC = () => {
       });
 
     } catch (error) {
-      console.error("Erro no processamento:", error);
-      // Mesmo com erro de rede, o link gerado acima permanece visível
+      console.error("Erro ao processar dados:", error);
     } finally {
       setLoading(false);
     }
@@ -1265,38 +1262,30 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
                   )}
                 </div>
 
-                {/* Lado Direito: Link de Assinatura */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 h-full flex flex-col">
-                  <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
-                    <span className="text-orange-400">🔗</span> Link de Assinatura
-                  </h3>
+                {generatedLink && (
+                  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 mt-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
+                      <LinkIcon size={20} className="text-orange-500" /> Link de Assinatura
+                    </h3>
 
-                  {generatedLink ? (
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="flex items-center w-full border rounded p-2 bg-gray-50">
-                        <input 
-                          className="bg-transparent flex-1 outline-none text-sm text-gray-500" 
-                          value={generatedLink} 
-                          readOnly 
-                        />
-                        <button onClick={() => {
-                          navigator.clipboard.writeText(generatedLink);
-                          setCopied(true);
-                          setTimeout(() => setCopied(false), 2000);
-                        }}>
-                          {copied ? '✅' : '📋'}
-                        </button>
-                      </div>
-
-                      <div className="bg-white p-4 border rounded-xl">
-                        <QRCodeCanvas value={generatedLink} size={160} />
-                      </div>
-                      <p className="text-xs text-gray-400">Link pronto para envio.</p>
+                    <div className="flex items-center w-full border rounded p-2 bg-gray-50 mb-4">
+                      <input 
+                        className="bg-transparent flex-1 outline-none text-sm text-gray-500" 
+                        value={generatedLink} 
+                        readOnly 
+                      />
+                      <button onClick={copyToClipboard} className="p-1 hover:bg-gray-200 rounded">
+                        {copied ? <CheckCircle2 size={18} className="text-green-500" /> : <Copy size={18} />}
+                      </button>
                     </div>
-                  ) : (
-                    <p className="text-sm text-gray-400">Processe os dados para gerar o link.</p>
-                  )}
-                </div>
+
+                    <div className="flex justify-center p-4 bg-white border rounded-xl">
+                      {/* Aqui usamos o componente que você já importou */}
+                      <QRCodeSVG value={generatedLink} size={150} />
+                    </div>
+                    <p className="text-[10px] text-center text-gray-400 mt-2 italic">Link pronto para envio.</p>
+                  </div>
+                )}
               </motion.div>
             ) : activeTab === 'idealizador' ? (
               <motion.div
