@@ -29,6 +29,7 @@ import {
   Coffee
 } from 'lucide-react';
 import { parseDriverLine } from '../services/geminiService';
+import { supabase } from '../services/supabase';
 import { DriverData, Contract } from '../types';
 import { 
   PieChart, 
@@ -137,27 +138,38 @@ export const AdminDashboard: React.FC = () => {
   const handleProcess = async () => {
     if (!inputText.trim()) return;
     setLoading(true);
+    
     try {
-      // 1. O Gemini processa o texto
-      const data = await parseDriverLine(inputText);
-      setParsedData(data);
+      // 1. O Gemini extrai os dados do texto
+      const extractedData = await parseDriverLine(inputText);
       
-      // 2. Cria o ID
+      // 2. Gera o ID único para o link
       const id = Math.random().toString(36).substring(2, 15);
-      
-      // 3. GERA O LINK IMEDIATAMENTE (Importante!)
+
+      // 3. SALVAMENTO NO SUPABASE
+      // Note: 'Contratos' é o nome da tabela e 'Dados' é a coluna JSONB (conforme seu print)
+      const { error } = await supabase
+        .from('Contratos')
+        .insert([{ 
+          id: id, 
+          Dados: extractedData, // Usando 'Dados' com D maiúsculo conforme o banco
+          created_at: new Date().toISOString() 
+        }]);
+
+      if (error) {
+        console.error("Erro ao salvar no Supabase:", error);
+        alert("Erro no banco de dados: " + error.message);
+        return;
+      }
+
+      // 4. Se salvou com sucesso, gera o link e mostra na tela
       const url = `${window.location.origin}/sign/${id}`;
       setGeneratedLink(url);
-
-      // 4. Tenta salvar (Se a API falhar, o link já apareceu no passo anterior)
-      await fetch('/api/contracts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, data })
-      });
+      setParsedData(extractedData);
 
     } catch (error) {
-      console.error("Erro ao processar dados:", error);
+      console.error("Erro geral no processamento:", error);
+      alert("Falha ao processar os dados. Verifique sua conexão.");
     } finally {
       setLoading(false);
     }
