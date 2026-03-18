@@ -138,33 +138,38 @@ export const AdminDashboard: React.FC = () => {
   const handleProcess = async () => {
     if (!inputText.trim()) return;
     setLoading(true);
-
     try {
-      const extractedData = await parseDriverLine(inputText);
-      // Gera um ID curto e único para o link
+      // Gera o ID único para o contrato
       const generatedId = Math.random().toString(36).substring(2, 10);
+      
+      // 1. DADOS QUE VOCÊ EXTRAIU DA PLANILHA
+      const extractedData = { 
+        info: inputText, 
+        data_geracao: new Date().toISOString() 
+      };
 
-      // 1. SALVAR NO SUPABASE
-      const { error } = await supabase
-        .from('contracts') // Nome exato da tabela
+      // 2. SALVAR NO SUPABASE
+      // Tabela: contracts
+      // Coluna: dados
+      const { error: sbError } = await supabase
+        .from('contracts') 
         .insert([{ 
           id: generatedId, 
-          data: extractedData, // Nome exato da coluna
-          onbase_status: false // Valor padrão configurado
+          dados: extractedData, // NOME EXATO DA COLUNA AGORA
+          onbase_status: false 
         }]);
 
-      if (error) throw error;
+      if (sbError) throw sbError;
 
-      // 2. GERAR O LINK PARA O MOTORISTA
+      // 3. GERAR LINK
       const url = `${window.location.origin}/sign/${generatedId}`;
       setGeneratedLink(url);
-      setParsedData(extractedData);
-      alert("Sucesso! Link gerado.");
+      setParsedData(extractedData as any); // Keep this so the UI doesn't break if it relies on parsedData
+      alert("Contrato gerado com sucesso!");
 
-    } catch (error: any) {
-      console.error("Erro detalhado:", error);
-      // Alerta amigável baseado no erro PGRST205 que vimos antes
-      alert(`Erro ao salvar: ${error.message || "Verifique a conexão com o banco"}`);
+    } catch (err: any) {
+      console.error("Erro ao salvar:", err);
+      alert(`Erro: ${err.message || "Verifique o console"}`);
     } finally {
       setLoading(false);
     }

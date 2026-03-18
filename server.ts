@@ -32,7 +32,7 @@ async function startServer() {
 
       res.json(contracts.map(c => ({
         ...c,
-        data: typeof c.data === 'string' ? JSON.parse(c.data) : c.data,
+        data: typeof c.dados === 'string' ? JSON.parse(c.dados) : c.dados,
         onbase_status: !!c.onbase_status
       })));
     } catch (error) {
@@ -46,7 +46,7 @@ async function startServer() {
     try {
       const { error } = await supabase
         .from('contracts')
-        .insert([{ id, data }]);
+        .insert([{ id, dados: data }]);
 
       if (error) throw error;
       res.json({ success: true });
@@ -72,7 +72,7 @@ async function startServer() {
 
       res.json({
         ...contract,
-        data: typeof contract.data === 'string' ? JSON.parse(contract.data) : contract.data,
+        data: typeof contract.dados === 'string' ? JSON.parse(contract.dados) : contract.dados,
         onbase_status: !!contract.onbase_status
       });
     } catch (error) {

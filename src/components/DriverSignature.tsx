@@ -73,12 +73,12 @@ export const DriverSignature: React.FC = () => {
 
         if (error) throw error;
 
-        // Verifica se achou os dados e se a coluna 'data' existe
-        if (data && data.data) {
+        // Verifica se achou os dados e se a coluna 'dados' existe
+        if (data && data.dados) {
           // Adaptamos para o formato que o componente espera
           setContract({
             id: data.id,
-            data: typeof data.data === 'string' ? JSON.parse(data.data) : data.data,
+            data: typeof data.dados === 'string' ? JSON.parse(data.dados) : data.dados,
             signature: data.signature,
             signed_at: data.signed_at,
             created_at: data.created_at,
