@@ -65,23 +65,36 @@ export const DriverSignature: React.FC = () => {
     const carregarMapa = async (destinoOriginal: string) => {
       if (!destinoOriginal) return;
 
-      // 1. Remove acentos, transforma em minúsculo e troca espaços por _
-      const nomeLimpo = destinoOriginal
-        .normalize("NFD")             // Decompõe caracteres com acento
-        .replace(/[\u0300-\u036f]/g, "") // Remove os acentos
-        .toLowerCase()                // Tudo minúsculo
-        .replace(/\s+/g, '_')         // Troca espaços por _
-        .replace(/[()]/g, '');        // Remove parênteses se houver
+      // 1. Função "Blindada" para formatar o nome igual ao Storage
+      const formatarCaminhoArquivo = (destino: string) => {
+        if (!destino) return '';
+        
+        const nomeLimpo = destino
+          .normalize("NFD")                // Decompõe acentos (ex: é -> e + ´)
+          .replace(/[\u0300-\u036f]/g, "")  // Remove os acentos
+          .toLowerCase()                   // Tudo para minúsculo
+          .trim()                          // Remove espaços inúteis
+          .replace(/\s+/g, '_')            // Troca espaços por _
+          .replace(/[()]/g, '')            // Remove parênteses
+          .split('-')[0].trim();           // Se for "SUMARE - SP", pega apenas "SUMARE"
 
-      // 2. Busca o arquivo SEM adicionar .pdf se ele já existir no nome
-      const finalPath = nomeLimpo.endsWith('.pdf') ? nomeLimpo : `${nomeLimpo}.pdf`;
+        return `rota_${nomeLimpo}.pdf`;    // Adiciona o prefixo e a extensão
+      };
 
-      const { data } = supabase.storage
-        .from('mapas')
-        .getPublicUrl(finalPath);
+      // 2. Aplicação no seu código de busca
+      const nomeDoFicheiro = formatarCaminhoArquivo(destinoOriginal);
 
-      if (data && data.publicUrl) {
-        setMapUrl(data.publicUrl);
+      const { data: publicUrlData } = supabase.storage
+        .from('maps') // Confirme se o bucket no Supabase é 'maps' ou 'mapas'
+        .getPublicUrl(nomeDoFicheiro);
+
+      // 3. LOG DE TESTE - IMPORTANTE!
+      console.log("Destino no Banco:", destinoOriginal);
+      console.log("Ficheiro que o código gerou:", nomeDoFicheiro);
+      console.log("URL Final:", publicUrlData?.publicUrl);
+
+      if (publicUrlData && publicUrlData.publicUrl) {
+        setMapUrl(publicUrlData.publicUrl);
       } else {
         setMapUrl(null);
       }
