@@ -8,21 +8,21 @@ interface VisualizadorDeMapaProps {
 const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({ destination }) => {
   if (!destination) return null;
 
-  // 1. Gera o nome do arquivo exatamente como está no bucket
+  // Limpa o nome para o formato: rota_cidade_uf.pdf
   const nomeArquivo = `rota_${destination.toLowerCase().trim()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/\./g, '').replace(/\s+/g, '_')}.pdf`;
 
-  // 2. Apenas gera a URL (não faz chamada de 'save' no banco)
+  // Apenas busca a URL (não faz escrita no banco)
   const { data } = supabase.storage
     .from('MAPAS-ROTAS')
     .getPublicUrl(nomeArquivo);
 
   return (
-    <div style={{ width: '100%', height: '500px', marginTop: '10px', border: '1px solid #ccc' }}>
+    <div style={{ width: '100%', height: '500px', marginTop: '10px' }}>
       <iframe
         src={`https://docs.google.com/viewer?url=${encodeURIComponent(data.publicUrl)}&embedded=true`}
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: '100%', height: '100%', border: '1px solid #ccc' }}
         frameBorder="0"
       />
     </div>
