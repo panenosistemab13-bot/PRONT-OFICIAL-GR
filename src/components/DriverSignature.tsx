@@ -16,7 +16,6 @@ import {
   Lock
 } from 'lucide-react';
 import { SignaturePad } from './SignaturePad';
-import { RouteMap } from './RouteMap';
 import { Contract } from '../types';
 import { supabase } from '../services/supabase';
 import VisualizadorDeMapa from './VisualizadorDeMapa';
