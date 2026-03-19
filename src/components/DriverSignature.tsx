@@ -59,6 +59,39 @@ export const DriverSignature: React.FC = () => {
   const [signed, setSigned] = useState(false);
   const [step, setStep] = useState(1); // 1: Checklist, 2: Termo, 3: Assinatura
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
+  const [mapUrl, setMapUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const carregarMapaCorreto = async (destinoDoContrato: string) => {
+      if (!destinoDoContrato) return;
+      
+      // 1. Limpa o texto (tira espaços e deixa tudo em MAIÚSCULO)
+      const busca = destinoDoContrato.trim().toUpperCase();
+
+      try {
+        // 2. Busca no Supabase ignorando se é maiúsculo ou minúsculo (ilike)
+        const { data, error } = await supabase
+          .from('maps')
+          .select('image_data')
+          .ilike('destination', `%${busca}%`) // Procura o destino dentro do nome
+          .single();
+
+        if (data && data.image_data) {
+          setMapUrl(data.image_data);
+        } else {
+          console.error("Mapa não encontrado para:", busca);
+          setMapUrl(null);
+        }
+      } catch (err) {
+        console.error("Erro ao buscar mapa:", err);
+        setMapUrl(null);
+      }
+    };
+
+    if (contract?.data?.destino) {
+      carregarMapaCorreto(contract.data.destino);
+    }
+  }, [contract?.data?.destino]);
 
   useEffect(() => {
     const fetchContract = async () => {
@@ -477,8 +510,21 @@ export const DriverSignature: React.FC = () => {
                       <span className="text-sm font-bold text-indigo-900">{contract.data.destino || 'Gov. Celso Ramos/SC'}</span>
                     </div>
                     
-                    <div className="mt-8">
-                      <RouteMap origin={contract.data.origem || 'Santa Luzia/MG'} destination={contract.data.destino || 'Gov. Celso Ramos/SC'} />
+                    <div className="mt-6 border-2 border-black">
+                      <div className="bg-gray-100 p-2 font-bold text-center border-b-2 border-black">
+                        PLANO DE ROTA: {contract.data.destino}
+                      </div>
+                      <div className="p-0">
+                        {mapUrl ? (
+                          <iframe 
+                            src={mapUrl}
+                            className="w-full h-[600px]"
+                            title="Mapa de Trajeto"
+                          />
+                        ) : (
+                          <p className="text-red-500 font-bold text-center p-4">Mapa de trajeto não localizado para: {contract.data.destino}</p>
+                        )}
+                      </div>
                     </div>
 
                     <div className="mt-6 space-y-2">

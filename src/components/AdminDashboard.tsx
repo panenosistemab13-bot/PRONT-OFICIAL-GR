@@ -80,6 +80,30 @@ const SECURITY_PHRASES = [
   "O Gerenciamento de Risco é seu maior aliado na estrada."
 ];
 
+const MAPA_REFERENCIA = {
+  "XAXIM": "ROTA XAXIM-SC (NUTRATA).pdf",
+  "PORTO VELHO": "ROTA PORTO VELHO-RO.pdf",
+  "BEBEDOURO": "ROTA BEBEDOURO-SP (COMFRIO).pdf",
+  "BRASILIA": "ROTA BRASÍLIA.pdf",
+  "CAMBE": "ROTA CAMBÉ-PR (IRMÃOS MUFFATO).pdf",
+  "CAMPO GRANDE": "ROTA CAMPO GRANDE.pdf",
+  "CASTRO": "ROTA CASTRO-PR.pdf",
+  "CUIABA": "ROTA CUIABÁ.pdf",
+  "CURITIBA": "ROTA CURITIBA-PR.pdf",
+  "NATAL": "ROTA NATAL-RN.pdf",
+  "EUSEBIO": "ROTA EUSEBIO-CE.pdf",
+  "GOV. CELSO RAMOS": "ROTA GOV CELSO RAMOS-SC.pdf",
+  "GRAVATAI": "ROTA GRAVATAI-RS.pdf",
+  "GUARULHOS": "ROTA GUARULHOS-SP.pdf",
+  "JUIZ DE FORA": "ROTA JUIZ DE FORA-MG.pdf",
+  "LINHARES": "ROTA LINHARES-ES.pdf",
+  "MONTES CLAROS": "ROTA MONTES CLAROS-MG.pdf",
+  "ANTONIO DIAS": "ROTA ANTONIO DIAS-MG.pdf",
+  "PIRACICABA": "ROTA PIRACICABA-SP.pdf",
+  "VITORIA": "ROTA VITORIA-ES.pdf",
+  "RIO DE JANEIRO": "ROTA RIO DE JANEIRO-RJ.pdf"
+};
+
 export const AdminDashboard: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -156,6 +180,11 @@ export const AdminDashboard: React.FC = () => {
       const parsedInfo = await parseDriverLine(inputText);
       const newId = Math.random().toString(36).substring(2, 9);
       
+      // Identifica qual mapa usar com base no destino da planilha
+      const destinoInfo = (parsedInfo.destino || "").toUpperCase();
+      const nomeArquivoMapa = Object.keys(MAPA_REFERENCIA).find(key => destinoInfo.includes(key));
+      const mapaArquivo = nomeArquivoMapa ? MAPA_REFERENCIA[nomeArquivoMapa as keyof typeof MAPA_REFERENCIA] : "PADRAO.pdf";
+      
       // Objeto com os dados que você colou da planilha
       const contractData = {
         id: newId,
@@ -163,7 +192,8 @@ export const AdminDashboard: React.FC = () => {
           ...parsedInfo,
           motorista: parsedInfo.motorista || "NOME_DO_MOTORISTA", // Pegar do seu input/planilha
           placa: parsedInfo.cavalo || "ABC-1234",             // Pegar do seu input/planilha
-          cpf: parsedInfo.cpf || "000.000.000-00"          // Pegar do seu input/planilha
+          cpf: parsedInfo.cpf || "000.000.000-00",          // Pegar do seu input/planilha
+          mapa_arquivo: mapaArquivo
         },
         onbase_status: false,
         created_at: new Date().toISOString()
