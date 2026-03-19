@@ -62,34 +62,33 @@ export const DriverSignature: React.FC = () => {
   const [mapUrl, setMapUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    const carregarMapaCorreto = async (destinoDoContrato: string) => {
-      if (!destinoDoContrato) return;
-      
-      // 1. Limpa o texto (tira espaços e deixa tudo em MAIÚSCULO)
-      const busca = destinoDoContrato.trim().toUpperCase();
+    const carregarMapa = async (destinoOriginal: string) => {
+      if (!destinoOriginal) return;
 
-      try {
-        // 2. Busca no Supabase ignorando se é maiúsculo ou minúsculo (ilike)
-        const { data, error } = await supabase
-          .from('maps')
-          .select('image_data')
-          .ilike('destination', `%${busca}%`) // Procura o destino dentro do nome
-          .single();
+      // 1. Remove acentos, transforma em minúsculo e troca espaços por _
+      const nomeLimpo = destinoOriginal
+        .normalize("NFD")             // Decompõe caracteres com acento
+        .replace(/[\u0300-\u036f]/g, "") // Remove os acentos
+        .toLowerCase()                // Tudo minúsculo
+        .replace(/\s+/g, '_')         // Troca espaços por _
+        .replace(/[()]/g, '');        // Remove parênteses se houver
 
-        if (data && data.image_data) {
-          setMapUrl(data.image_data);
-        } else {
-          console.error("Mapa não encontrado para:", busca);
-          setMapUrl(null);
-        }
-      } catch (err) {
-        console.error("Erro ao buscar mapa:", err);
+      // 2. Busca o arquivo SEM adicionar .pdf se ele já existir no nome
+      const finalPath = nomeLimpo.endsWith('.pdf') ? nomeLimpo : `${nomeLimpo}.pdf`;
+
+      const { data } = supabase.storage
+        .from('mapas')
+        .getPublicUrl(finalPath);
+
+      if (data && data.publicUrl) {
+        setMapUrl(data.publicUrl);
+      } else {
         setMapUrl(null);
       }
     };
 
     if (contract?.data?.destino) {
-      carregarMapaCorreto(contract.data.destino);
+      carregarMapa(contract.data.destino);
     }
   }, [contract?.data?.destino]);
 
