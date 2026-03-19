@@ -6,14 +6,21 @@ interface VisualizadorDeMapaProps {
 }
 
 const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({ destination }) => {
+  // Se não tiver destino selecionado, não mostra nada
   if (!destination) return null;
 
-  // 1. Limpa o nome para bater com o Storage: "rota_gov_celso_ramos.pdf"
-  const nomeArquivo = `rota_${destination.toLowerCase().trim()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/\./g, '').replace(/\s+/g, '_')}.pdf`;
+  // 1. LIMPEZA TOTAL DO NOME (Igual ao que está no seu Storage)
+  // Exemplo: "GOV. CELSO RAMOS | SC" vira "rota_gov_celso_ramos_sc.pdf"
+  const nomeLimpo = destination
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Tira acentos
+    .replace(/[.|/]/g, '')                          // Tira pontos e barras
+    .trim()
+    .replace(/\s+/g, '_');                          // Espaços viram _
 
-  // 2. Gera a URL pública do arquivo
+  const nomeArquivo = `rota_${nomeLimpo}.pdf`;
+
+  // 2. BUSCA A URL NO BUCKET (Certifique-se que o nome no Storage é MAPAS-ROTAS)
   const { data } = supabase.storage
     .from('MAPAS-ROTAS')
     .getPublicUrl(nomeArquivo);
@@ -21,29 +28,38 @@ const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({ destination }) 
   const urlFinal = data?.publicUrl;
 
   return (
-    <div style={{ width: '100%', marginTop: '20px', border: '1px solid #ccc', borderRadius: '8px', padding: '10px' }}>
-      <p style={{ fontWeight: 'bold', textAlign: 'center' }}>Mapa: {destination}</p>
+    <div style={{ marginTop: '20px', border: '2px solid #333', padding: '15px', borderRadius: '10px', textAlign: 'center' }}>
+      <h3 style={{ marginBottom: '10px' }}>Mapa de Rota: {destination}</h3>
       
-      {/* Visualizador do Google */}
-      <div style={{ width: '100%', height: '500px', backgroundColor: '#eee' }}>
-        <iframe
-          src={`https://docs.google.com/viewer?url=${encodeURIComponent(urlFinal)}&embedded=true`}
-          style={{ width: '100%', height: '100%' }}
-          frameBorder="0"
-        />
-      </div>
-
-      {/* Botão de Emergência se o quadro acima falhar */}
-      <div style={{ textAlign: 'center', marginTop: '10px' }}>
+      {/* O LINK QUE TINHA SUMIDO */}
+      <div style={{ padding: '15px', backgroundColor: '#f0f0f0', borderRadius: '5px' }}>
+        <p style={{ fontSize: '14px', color: '#333' }}>O arquivo buscado é: <strong>{nomeArquivo}</strong></p>
+        
         <a 
           href={urlFinal} 
           target="_blank" 
-          rel="noreferrer" 
-          style={{ color: '#007bff', textDecoration: 'underline', fontSize: '14px' }}
+          rel="noopener noreferrer" 
+          style={{ 
+            display: 'inline-block', 
+            marginTop: '10px', 
+            padding: '12px 24px', 
+            backgroundColor: '#007bff', 
+            color: '#fff', 
+            textDecoration: 'none', 
+            borderRadius: '5px',
+            fontWeight: 'bold'
+          }}
         >
-          Clique aqui para abrir o PDF original (Caso não carregue acima)
+          CLIQUE AQUI PARA ABRIR O MAPA
         </a>
       </div>
+
+      {/* TENTATIVA DE MOSTRAR NA TELA (Opcional) */}
+      <iframe
+        src={`https://docs.google.com/viewer?url=${encodeURIComponent(urlFinal)}&embedded=true`}
+        style={{ width: '100%', height: '400px', marginTop: '15px', border: '1px solid #ccc' }}
+        frameBorder="0"
+      />
     </div>
   );
 };
