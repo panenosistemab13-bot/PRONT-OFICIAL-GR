@@ -66,7 +66,7 @@ export const DriverSignature: React.FC = () => {
       
       try {
         const { data, error } = await supabase
-          .from('Contratos') // Mude para 'Contratos' (com C maiúsculo)
+          .from('contracts') // Nome exato
           .select('*')
           .eq('id', id)
           .single();
@@ -109,7 +109,7 @@ export const DriverSignature: React.FC = () => {
   const handleSign = async (signature: string) => {
     try {
       const { error } = await supabase
-        .from('Contratos')
+        .from('contracts')
         .update({ 
           signature, 
           signed_at: new Date().toISOString() 

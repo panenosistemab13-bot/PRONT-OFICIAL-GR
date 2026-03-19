@@ -24,13 +24,13 @@ async function startServer() {
   app.get("/api/contracts", async (req, res) => {
     try {
       const { data: contracts, error } = await supabase
-        .from('Contratos') // Mude para 'Contratos'
-        .select('id, dados, created_at')
+        .from('contracts')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      res.json(contracts.map((c: any) => ({
+      res.json(contracts.map(c => ({
         ...c,
         data: typeof c.dados === 'string' ? JSON.parse(c.dados) : c.dados,
         onbase_status: !!c.onbase_status
@@ -45,7 +45,7 @@ async function startServer() {
     const { id, data } = req.body;
     try {
       const { error } = await supabase
-        .from('Contratos')
+        .from('contracts')
         .insert([{ id, dados: data }]);
 
       if (error) throw error;
@@ -60,7 +60,7 @@ async function startServer() {
     const { id } = req.params;
     try {
       const { data: contract, error } = await supabase
-        .from('Contratos')
+        .from('contracts')
         .select('*')
         .eq('id', id)
         .single();
@@ -86,7 +86,7 @@ async function startServer() {
     const { signature } = req.body;
     try {
       const { error } = await supabase
-        .from('Contratos')
+        .from('contracts')
         .update({ 
           signature, 
           signed_at: new Date().toISOString() 
@@ -106,7 +106,7 @@ async function startServer() {
     const { status } = req.body;
     try {
       const { error } = await supabase
-        .from('Contratos')
+        .from('contracts')
         .update({ onbase_status: status })
         .eq('id', id);
 
@@ -122,7 +122,7 @@ async function startServer() {
     try {
       // Supabase requires a filter for deletes, so we delete where id is not null (all)
       const { error } = await supabase
-        .from('Contratos')
+        .from('contracts')
         .delete()
         .neq('id', '0');
 
@@ -138,7 +138,7 @@ async function startServer() {
     const { id } = req.params;
     try {
       const { error } = await supabase
-        .from('Contratos')
+        .from('contracts')
         .delete()
         .eq('id', id);
 

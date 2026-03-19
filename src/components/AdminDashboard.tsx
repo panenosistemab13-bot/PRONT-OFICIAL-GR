@@ -142,20 +142,29 @@ export const AdminDashboard: React.FC = () => {
       // Gera o ID único para o contrato
       const generatedId = Math.random().toString(36).substring(2, 10);
       
-      const { error } = await supabase
-        .from('Contratos') // Mude para 'Contratos' (com C maiúsculo)
+      // 1. DADOS QUE VOCÊ EXTRAIU DA PLANILHA
+      const extractedData = { 
+        info: inputText, 
+        data_geracao: new Date().toISOString() 
+      };
+
+      // 2. SALVAR NO SUPABASE
+      // Tabela: contracts
+      // Coluna: dados
+      const { error: sbError } = await supabase
+        .from('contracts') 
         .insert([{ 
           id: generatedId, 
-          dados: { texto: inputText, data: new Date().toISOString() }, // Use 'dados'
+          dados: extractedData, // NOME EXATO DA COLUNA AGORA
           onbase_status: false 
         }]);
 
-      if (error) throw error;
+      if (sbError) throw sbError;
 
       // 3. GERAR LINK
       const url = `${window.location.origin}/sign/${generatedId}`;
       setGeneratedLink(url);
-      setParsedData({ texto: inputText, data: new Date().toISOString() } as any); // Keep this so the UI doesn't break if it relies on parsedData
+      setParsedData(extractedData as any); // Keep this so the UI doesn't break if it relies on parsedData
       alert("Contrato gerado com sucesso!");
 
     } catch (err: any) {
