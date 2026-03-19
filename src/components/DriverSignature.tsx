@@ -63,7 +63,7 @@ export const DriverSignature: React.FC = () => {
   // 1. Gere a URL usando o nome exato do seu bucket: 'mapas-rotas'
   const { data: mapaData } = supabase.storage
     .from('mapas-rotas')
-    .getPublicUrl(`rota_${(contract?.data?.destino || '').toLowerCase().trim().replace(/\s+/g, '_')}.pdf.pdf`);
+    .getPublicUrl(`rota_${(contract?.data?.destino || '').toLowerCase().trim().replace(/\s+/g, '_')}.pdf`);
 
   useEffect(() => {
     const fetchContract = async () => {
