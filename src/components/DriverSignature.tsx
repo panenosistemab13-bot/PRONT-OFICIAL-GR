@@ -59,37 +59,23 @@ export const DriverSignature: React.FC = () => {
   const [signed, setSigned] = useState(false);
   const [step, setStep] = useState(1); // 1: Checklist, 2: Termo, 3: Assinatura
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
-  const [mapUrl, setMapUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    const carregarMapa = async (destinoOriginal: string) => {
-      if (!destinoOriginal) return;
+  const renderMapa = () => {
+    if (!contract?.data?.destino) return null;
 
-      // 1. Pegamos o destino do banco (ex: "SUMARÉ")
-      const destinoRaw = destinoOriginal;
+    // 1. Gera o nome exatamente como está no seu Storage
+    const nomeArquivo = `ROTA_${contract.data.destino.toUpperCase()}.pdf`;
 
-      // 2. Montamos o nome exatamente como está no seu print: ROTA_ + NOME + .pdf
-      // O .toUpperCase() garante que fique em MAIÚSCULO
-      const nomeDoFicheiro = `ROTA_${destinoRaw.toUpperCase()}.pdf`;
+    // 2. Busca a URL do Supabase
+    const { data } = supabase.storage
+      .from('maps')
+      .getPublicUrl(nomeArquivo);
 
-      // 3. Geramos a URL
-      const { data: publicUrlData } = supabase.storage
-        .from('maps')
-        .getPublicUrl(nomeDoFicheiro);
+    const urlPublica = data.publicUrl;
 
-      console.log("O código agora está buscando por:", nomeDoFicheiro);
-
-      if (publicUrlData && publicUrlData.publicUrl) {
-        setMapUrl(publicUrlData.publicUrl);
-      } else {
-        setMapUrl(null);
-      }
-    };
-
-    if (contract?.data?.destino) {
-      carregarMapa(contract.data.destino);
-    }
-  }, [contract?.data?.destino]);
+    // 3. Monta a URL para o visualizador do Google
+    return `https://docs.google.com/viewer?url=${encodeURIComponent(urlPublica)}&embedded=true`;
+  };
 
   useEffect(() => {
     const fetchContract = async () => {
@@ -513,14 +499,14 @@ export const DriverSignature: React.FC = () => {
                         PLANO DE ROTA: {contract.data.destino}
                       </div>
                       <div className="p-0">
-                        {mapUrl ? (
+                        {contract.data.destino ? (
                           <iframe 
-                            src={mapUrl}
-                            className="w-full h-[600px]"
-                            title="Mapa de Trajeto"
+                            src={renderMapa() || ''}
+                            style={{ width: '100%', height: '600px', border: 'none' }}
+                            title="Mapa da Rota"
                           />
                         ) : (
-                          <p className="text-red-500 font-bold text-center p-4">Mapa de trajeto não localizado para: {contract.data.destino}</p>
+                          <p className="text-red-500 font-bold text-center p-4">Destino não informado para carregar o mapa.</p>
                         )}
                       </div>
                     </div>
