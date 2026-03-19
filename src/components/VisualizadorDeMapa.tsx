@@ -1,63 +1,45 @@
 import React from 'react';
 import { supabase } from '../services/supabase';
 
-interface VisualizadorDeMapaProps {
-  destination: string;
-}
-
-const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({ destination }) => {
-  // Se não tiver destino selecionado, não mostra nada
+const VisualizadorDeMapa = ({ destination }) => {
   if (!destination) return null;
 
-  // 1. LIMPEZA TOTAL DO NOME (Igual ao que está no seu Storage)
-  // Exemplo: "GOV. CELSO RAMOS | SC" vira "rota_gov_celso_ramos_sc.pdf"
-  const nomeLimpo = destination
-    .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Tira acentos
-    .replace(/[.|/]/g, '')                          // Tira pontos e barras
-    .trim()
-    .replace(/\s+/g, '_');                          // Espaços viram _
+  // Gera o nome do arquivo na mão para não dar erro
+  const base = destination.toLowerCase().trim()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[.|/]/g, '').replace(/\s+/g, '_');
+  
+  const nomeArquivo = `rota_${base}.pdf`;
 
-  const nomeArquivo = `rota_${nomeLimpo}.pdf`;
-
-  // 2. BUSCA A URL NO BUCKET (Certifique-se que o nome no Storage é MAPAS-ROTAS)
-  const { data } = supabase.storage
-    .from('MAPAS-ROTAS')
-    .getPublicUrl(nomeArquivo);
-
-  const urlFinal = data?.publicUrl;
+  // Tenta pegar a URL do bucket MAPAS-ROTAS
+  const { data } = supabase.storage.from('MAPAS-ROTAS').getPublicUrl(nomeArquivo);
 
   return (
-    <div style={{ marginTop: '20px', border: '2px solid #333', padding: '15px', borderRadius: '10px', textAlign: 'center' }}>
-      <h3 style={{ marginBottom: '10px' }}>Mapa de Rota: {destination}</h3>
+    <div style={{ marginTop: '15px', padding: '10px', border: '1px solid #ccc' }}>
+      <p style={{ fontSize: '12px' }}>Mapa: {destination}</p>
       
-      {/* O LINK QUE TINHA SUMIDO */}
-      <div style={{ padding: '15px', backgroundColor: '#f0f0f0', borderRadius: '5px' }}>
-        <p style={{ fontSize: '14px', color: '#333' }}>O arquivo buscado é: <strong>{nomeArquivo}</strong></p>
-        
-        <a 
-          href={urlFinal} 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          style={{ 
-            display: 'inline-block', 
-            marginTop: '10px', 
-            padding: '12px 24px', 
-            backgroundColor: '#007bff', 
-            color: '#fff', 
-            textDecoration: 'none', 
-            borderRadius: '5px',
-            fontWeight: 'bold'
-          }}
-        >
-          CLIQUE AQUI PARA ABRIR O MAPA
-        </a>
-      </div>
+      {/* Botão direto (Mais seguro quando a IA ou o Iframe falham) */}
+      <a 
+        href={data.publicUrl} 
+        target="_blank" 
+        rel="noreferrer"
+        style={{ 
+          display: 'block', 
+          textAlign: 'center', 
+          padding: '10px', 
+          background: '#007bff', 
+          color: 'white', 
+          textDecoration: 'none',
+          borderRadius: '5px',
+          fontWeight: 'bold'
+        }}
+      >
+        ABRIR MAPA AGORA
+      </a>
 
-      {/* TENTATIVA DE MOSTRAR NA TELA (Opcional) */}
       <iframe
-        src={`https://docs.google.com/viewer?url=${encodeURIComponent(urlFinal)}&embedded=true`}
-        style={{ width: '100%', height: '400px', marginTop: '15px', border: '1px solid #ccc' }}
+        src={`https://docs.google.com/viewer?url=${encodeURIComponent(data.publicUrl)}&embedded=true`}
+        style={{ width: '100%', height: '400px', marginTop: '10px' }}
         frameBorder="0"
       />
     </div>
