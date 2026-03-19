@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Ajuste para o padrão do Vite que você está usando
+// Essas variáveis DEVEM estar na Vercel (Settings > Environment Variables)
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 

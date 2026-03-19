@@ -107,16 +107,30 @@ export const AdminDashboard: React.FC = () => {
     });
   };
 
+  // 1. BUSCAR HISTÓRICO REAL DO SUPABASE
   const fetchHistory = async () => {
     setHistoryLoading(true);
     try {
-      const response = await fetch('/api/contracts');
-      if (response.ok) {
-        const data = await response.json();
-        setContracts(data);
-      }
+      // Busca dados da tabela 'contracts' do projeto 'PRONT OFICIAL GR'
+      const { data, error } = await supabase
+        .from('contracts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      const mappedContracts = (data || []).map(row => ({
+        id: row.id,
+        data: typeof row.dados === 'string' ? JSON.parse(row.dados) : row.dados,
+        signature: row.signature,
+        signed_at: row.signed_at,
+        created_at: row.created_at,
+        onbase_status: row.onbase_status
+      }));
+      
+      setContracts(mappedContracts);
     } catch (error) {
-      console.error("Failed to fetch history", error);
+      console.error("Erro ao carregar histórico:", error);
     } finally {
       setHistoryLoading(false);
     }
@@ -135,74 +149,92 @@ export const AdminDashboard: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleProcess = async () => {
+  const handleGenerateAndSave = async () => {
     if (!inputText.trim()) return;
     setLoading(true);
     try {
-      // Gera o ID único para o contrato
-      const generatedId = Math.random().toString(36).substring(2, 10);
+      const parsedInfo = await parseDriverLine(inputText);
+      const newId = Math.random().toString(36).substring(2, 9);
       
-      // 1. DADOS QUE VOCÊ EXTRAIU DA PLANILHA
-      const extractedData = { 
-        info: inputText, 
-        data_geracao: new Date().toISOString() 
+      // Objeto com os dados que você colou da planilha
+      const contractData = {
+        id: newId,
+        dados: { 
+          ...parsedInfo,
+          motorista: parsedInfo.motorista || "NOME_DO_MOTORISTA", // Pegar do seu input/planilha
+          placa: parsedInfo.cavalo || "ABC-1234",             // Pegar do seu input/planilha
+          cpf: parsedInfo.cpf || "000.000.000-00"          // Pegar do seu input/planilha
+        },
+        onbase_status: false,
+        created_at: new Date().toISOString()
       };
 
-      // 2. SALVAR NO SUPABASE
-      // Tabela: contracts
-      // Coluna: dados
-      const { error: sbError } = await supabase
-        .from('contracts') 
-        .insert([{ 
-          id: generatedId, 
-          dados: extractedData, // NOME EXATO DA COLUNA AGORA
-          onbase_status: false 
-        }]);
+      // SALVA DIRETO NO SUPABASE (Tabela contracts)
+      const { error } = await supabase
+        .from('contracts')
+        .insert([contractData]);
 
-      if (sbError) throw sbError;
+      if (error) throw error;
 
-      // 3. GERAR LINK
-      const url = `${window.location.origin}/sign/${generatedId}`;
+      alert("Link gerado e salvo com sucesso no Banco de Dados!");
+      
+      // Atualiza a lista local para mostrar o novo card
+      const localContract = {
+        id: newId,
+        data: contractData.dados,
+        onbase_status: false,
+        created_at: contractData.created_at
+      };
+      setContracts([localContract, ...contracts]);
+      
+      // GERAR LINK
+      const url = `${window.location.origin}/sign/${newId}`;
       setGeneratedLink(url);
-      setParsedData(extractedData as any); // Keep this so the UI doesn't break if it relies on parsedData
-      alert("Contrato gerado com sucesso!");
-
-    } catch (err: any) {
-      console.error("Erro ao salvar:", err);
-      alert(`Erro: ${err.message || "Verifique o console"}`);
+      setParsedData(contractData.dados as any);
+      
+    } catch (error) {
+      console.error("Erro ao salvar no Supabase:", error);
+      alert("Erro ao salvar. Verifique a conexão com o banco.");
     } finally {
       setLoading(false);
     }
   };
 
+  // 2. EXCLUIR REGISTRO DO BANCO
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este registro?')) return;
     
     try {
-      const response = await fetch(`/api/contracts/${id}`, { method: 'DELETE' });
-      if (response.ok) {
-        setContracts(contracts.filter(c => c.id !== id));
-      }
+      const { error } = await supabase
+        .from('contracts')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      // Atualiza a lista na tela imediatamente
+      setContracts(contracts.filter(c => c.id !== id));
     } catch (error) {
-      console.error("Failed to delete", error);
+      console.error("Erro ao deletar:", error);
+      alert("Erro ao excluir do banco de dados.");
     }
   };
 
+  // 3. MARCAR SE FOI PARA O ONBASE
   const handleOnbaseToggle = async (id: string, newStatus: boolean) => {
     try {
-      const response = await fetch(`/api/contracts/${id}/onbase`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      });
+      const { error } = await supabase
+        .from('contracts')
+        .update({ onbase_status: newStatus })
+        .eq('id', id);
       
-      if (response.ok) {
-        setContracts(contracts.map(c => 
-          c.id === id ? { ...c, onbase_status: newStatus } : c
-        ));
-      }
+      if (error) throw error;
+      
+      setContracts(contracts.map(c => 
+        c.id === id ? { ...c, onbase_status: newStatus } : c
+      ));
     } catch (error) {
-      console.error("Failed to update onbase status", error);
+      console.error("Erro ao atualizar status:", error);
     }
   };
 
@@ -1207,7 +1239,7 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
                     />
                     
                     <button
-                      onClick={handleProcess}
+                      onClick={handleGenerateAndSave}
                       disabled={loading || !inputText.trim()}
                       className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold uppercase tracking-widest hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-600/20 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
                     >
