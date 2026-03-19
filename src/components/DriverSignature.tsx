@@ -60,18 +60,10 @@ export const DriverSignature: React.FC = () => {
   const [step, setStep] = useState(1); // 1: Checklist, 2: Termo, 3: Assinatura
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
 
-  // 1. Prepara o nome do arquivo exatamente como está no seu Storage
-  const nomeArquivo = contract?.data?.destino ? `ROTA_${contract.data.destino.toUpperCase()}.pdf` : '';
-
-  // 2. Pega a URL do Supabase
+  // 1. Gere a URL usando o nome exato do seu bucket: 'mapas-rotas'
   const { data: mapaData } = supabase.storage
-    .from('maps')
-    .getPublicUrl(nomeArquivo);
-
-  // 3. Cria a URL do Visualizador do Google (Isso resolve o problema de não abrir)
-  const urlParaExibir = contract?.data?.destino 
-    ? `https://docs.google.com/viewer?url=${encodeURIComponent(mapaData.publicUrl)}&embedded=true`
-    : '';
+    .from('mapas-rotas')
+    .getPublicUrl(`rota_${(contract?.data?.destino || '').toLowerCase().trim().replace(/\s+/g, '_')}.pdf.pdf`);
 
   useEffect(() => {
     const fetchContract = async () => {
@@ -497,8 +489,8 @@ export const DriverSignature: React.FC = () => {
                       <div className="p-0">
                         {contract.data.destino ? (
                           <iframe 
-                            src={urlParaExibir}
-                            style={{ width: '100%', height: '500px', border: 'none' }}
+                            src={`https://docs.google.com/viewer?url=${encodeURIComponent(mapaData.publicUrl)}&embedded=true`} 
+                            style={{ width: '100%', height: '600px', border: 'none' }}
                             title="Mapa da Rota"
                           />
                         ) : (
