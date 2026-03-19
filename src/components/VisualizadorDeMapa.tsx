@@ -6,43 +6,53 @@ interface VisualizadorDeMapaProps {
 }
 
 const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({ destination }) => {
-  const [mapUrl, setMapUrl] = useState('');
+  const [publicUrl, setPublicUrl] = useState('');
 
   useEffect(() => {
-    const carregarMapa = async () => {
+    const buscarMapa = async () => {
       if (!destination) return;
 
-      // Limpa o nome: "GOV. CELSO RAMOS" -> "rota_gov_celso_ramos"
-      const base = destination.toLowerCase().trim()
+      // 1. Gera o nome do arquivo limpando tudo: "rota_gov_celso_ramos.pdf"
+      const base = destination.toLowerCase()
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-        .replace(/\./g, '').replace(/\s+/g, '_');
-
-      // Tentamos as duas variações de bucket que apareceram nos seus prints
-      const buckets = ['MAPAS-ROTAS', 'mapas-rotas'];
+        .replace(/\./g, '')
+        .trim()
+        .replace(/\s+/g, '_');
       
-      // Nota: getPublicUrl apenas gera a string da URL. 
-      // Assumimos o primeiro bucket e o formato padrão 'rota_nome.pdf'
-      for (const b of buckets) {
-        const { data } = supabase.storage.from(b).getPublicUrl(`rota_${base}.pdf`);
-        
-        if (data?.publicUrl) {
-          setMapUrl(data.publicUrl);
-          break; 
-        }
+      const nomeArquivo = `rota_${base}.pdf`;
+
+      // 2. Tenta buscar a URL no bucket (testando os dois nomes possíveis)
+      const { data } = supabase.storage
+        .from('MAPAS-ROTAS') // Tenta o nome em maiúsculo primeiro
+        .getPublicUrl(nomeArquivo);
+
+      if (data?.publicUrl) {
+        setPublicUrl(data.publicUrl);
       }
     };
-    carregarMapa();
+    buscarMapa();
   }, [destination]);
 
-  if (!mapUrl) return null;
+  if (!publicUrl) return null;
+
+  // 3. Link direto + Google Viewer como backup
+  const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(publicUrl)}&embedded=true`;
 
   return (
-    <div style={{ width: '100%', height: '600px', border: '2px solid #000', marginTop: '20px' }}>
-      <iframe 
-        src={`https://docs.google.com/viewer?url=${encodeURIComponent(mapUrl)}&embedded=true`}
-        style={{ width: '100%', height: '100%' }}
-        title="Mapa da Rota"
-      />
+    <div style={{ width: '100%', marginTop: '20px' }}>
+      <div style={{ width: '100%', height: '600px', border: '2px solid #333', borderRadius: '8px', overflow: 'hidden' }}>
+        <iframe
+          src={viewerUrl}
+          style={{ width: '100%', height: '100%' }}
+          frameBorder="0"
+          title="Mapa de Rota"
+        />
+      </div>
+      <div style={{ textAlign: 'center', marginTop: '10px' }}>
+        <a href={publicUrl} target="_blank" rel="noreferrer" style={{ color: '#007bff', fontSize: '12px' }}>
+          Não carregou? Clique para abrir o PDF original
+        </a>
+      </div>
     </div>
   );
 };
