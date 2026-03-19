@@ -19,6 +19,7 @@ import { SignaturePad } from './SignaturePad';
 import { RouteMap } from './RouteMap';
 import { Contract } from '../types';
 import { supabase } from '../services/supabase';
+import VisualizadorDeMapa from './VisualizadorDeMapa';
 
 const CHECKLIST_ITEMS = [
   "O VEÍCULO APRESENTA-SE LIMPO E EM BOAS CONDIÇÕES DE ACESSO AO DEPÓSITO.",
@@ -59,11 +60,6 @@ export const DriverSignature: React.FC = () => {
   const [signed, setSigned] = useState(false);
   const [step, setStep] = useState(1); // 1: Checklist, 2: Termo, 3: Assinatura
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
-
-  // 1. Gere a URL usando o nome exato do seu bucket: 'mapas-rotas'
-  const { data: mapaData } = supabase.storage
-    .from('mapas-rotas')
-    .getPublicUrl(`rota_${(contract?.data?.destino || '').toLowerCase().trim().replace(/\s+/g, '_')}.pdf`);
 
   useEffect(() => {
     const fetchContract = async () => {
@@ -488,11 +484,7 @@ export const DriverSignature: React.FC = () => {
                       </div>
                       <div className="p-0">
                         {contract.data.destino ? (
-                          <iframe 
-                            src={`https://docs.google.com/viewer?url=${encodeURIComponent(mapaData.publicUrl)}&embedded=true`} 
-                            style={{ width: '100%', height: '600px', border: 'none' }}
-                            title="Mapa da Rota"
-                          />
+                          <VisualizadorDeMapa destination={contract.data.destino} />
                         ) : (
                           <p className="text-red-500 font-bold text-center p-4">Destino não informado para carregar o mapa.</p>
                         )}
