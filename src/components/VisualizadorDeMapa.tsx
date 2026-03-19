@@ -6,66 +6,43 @@ interface VisualizadorDeMapaProps {
 }
 
 const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({ destination }) => {
-  const [url, setUrl] = useState('');
+  const [mapUrl, setMapUrl] = useState('');
 
   useEffect(() => {
-    if (!destination) return;
+    const carregarMapa = async () => {
+      if (!destination) return;
 
-    // 1. Limpeza rigorosa do nome do arquivo
-    const nomeLimpo = destination
-      .toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Tira acento
-      .replace(/\./g, '')                             // Tira ponto do "Gov."
-      .trim()
-      .replace(/\s+/g, '_');                          // Espaço vira _
+      // Limpa o nome: "GOV. CELSO RAMOS" -> "rota_gov_celso_ramos"
+      const base = destination.toLowerCase().trim()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/\./g, '').replace(/\s+/g, '_');
 
-    const nomeArquivo = `rota_${nomeLimpo}.pdf`;
-
-    // 2. Busca a URL pública no bucket MAPAS-ROTAS
-    const { data } = supabase.storage
-      .from('MAPAS-ROTAS')
-      .getPublicUrl(nomeArquivo);
-
-    if (data?.publicUrl) {
-      setUrl(data.publicUrl);
-    }
+      // Tentamos as duas variações de bucket que apareceram nos seus prints
+      const buckets = ['MAPAS-ROTAS', 'mapas-rotas'];
+      
+      // Nota: getPublicUrl apenas gera a string da URL. 
+      // Assumimos o primeiro bucket e o formato padrão 'rota_nome.pdf'
+      for (const b of buckets) {
+        const { data } = supabase.storage.from(b).getPublicUrl(`rota_${base}.pdf`);
+        
+        if (data?.publicUrl) {
+          setMapUrl(data.publicUrl);
+          break; 
+        }
+      }
+    };
+    carregarMapa();
   }, [destination]);
 
-  if (!url) return <div style={{ textAlign: 'center', padding: '20px' }}>Carregando mapa...</div>;
+  if (!mapUrl) return null;
 
   return (
-    <div style={{ width: '100%', marginTop: '20px' }}>
-      <div style={{ 
-        width: '100%', 
-        height: '600px', 
-        border: '2px solid #333', 
-        borderRadius: '8px', 
-        overflow: 'hidden',
-        backgroundColor: '#f5f5f5' 
-      }}>
-        {/* Usando object em vez de iframe do Google para carregar o PDF real */}
-        <object
-          data={url}
-          type="application/pdf"
-          width="100%"
-          height="100%"
-        >
-          <div style={{ padding: '20px', textAlign: 'center' }}>
-            <p>Seu navegador não consegue exibir o PDF aqui.</p>
-            <a 
-              href={url} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              style={{ padding: '10px 20px', background: '#007bff', color: '#fff', borderRadius: '5px', textDecoration: 'none' }}
-            >
-              Clique aqui para abrir o mapa em tela cheia
-            </a>
-          </div>
-        </object>
-      </div>
-      <p style={{ fontSize: '11px', color: '#666', textAlign: 'center', marginTop: '10px' }}>
-        Arquivo: <strong>rota_{destination.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\./g, "").replace(/\s+/g, '_')}.pdf</strong>
-      </p>
+    <div style={{ width: '100%', height: '600px', border: '2px solid #000', marginTop: '20px' }}>
+      <iframe 
+        src={`https://docs.google.com/viewer?url=${encodeURIComponent(mapUrl)}&embedded=true`}
+        style={{ width: '100%', height: '100%' }}
+        title="Mapa da Rota"
+      />
     </div>
   );
 };
