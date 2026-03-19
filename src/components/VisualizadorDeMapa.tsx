@@ -8,17 +8,7 @@ interface VisualizadorDeMapaProps {
 const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({ destination }) => {
   if (!destination) return null;
 
-  // 1. Limpa o nome para: rota_gov_celso_ramos.pdf
-  const formatarNome = (texto: string) => {
-    return texto
-      .toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove acentos
-      .replace(/\./g, '')                             // Remove pontos
-      .trim()
-      .replace(/\s+/g, '_');                          // Troca espaços por _
-  };
-
-  const arquivo = `rota_${formatarNome(destination)}.pdf`;
+  const arquivo = `rota_${destination.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\./g, "").replace(/\s+/g, '_')}.pdf`;
 
   // 2. Busca no bucket com o nome EXATO: 'MAPAS-ROTAS'
   const { data } = supabase.storage
