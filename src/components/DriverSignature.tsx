@@ -65,33 +65,19 @@ export const DriverSignature: React.FC = () => {
     const carregarMapa = async (destinoOriginal: string) => {
       if (!destinoOriginal) return;
 
-      // 1. Função "Blindada" para formatar o nome igual ao Storage
-      const formatarCaminhoArquivo = (destino: string) => {
-        if (!destino) return '';
-        
-        const nomeLimpo = destino
-          .normalize("NFD")                // Decompõe acentos (ex: é -> e + ´)
-          .replace(/[\u0300-\u036f]/g, "")  // Remove os acentos
-          .toLowerCase()                   // Tudo para minúsculo
-          .trim()                          // Remove espaços inúteis
-          .replace(/\s+/g, '_')            // Troca espaços por _
-          .replace(/[()]/g, '')            // Remove parênteses
-          .split('-')[0].trim();           // Se for "SUMARE - SP", pega apenas "SUMARE"
+      // 1. Pegamos o destino do banco (ex: "SUMARÉ")
+      const destinoRaw = destinoOriginal;
 
-        return `rota_${nomeLimpo}.pdf`;    // Adiciona o prefixo e a extensão
-      };
+      // 2. Montamos o nome exatamente como está no seu print: ROTA_ + NOME + .pdf
+      // O .toUpperCase() garante que fique em MAIÚSCULO
+      const nomeDoFicheiro = `ROTA_${destinoRaw.toUpperCase()}.pdf`;
 
-      // 2. Aplicação no seu código de busca
-      const nomeDoFicheiro = formatarCaminhoArquivo(destinoOriginal);
-
+      // 3. Geramos a URL
       const { data: publicUrlData } = supabase.storage
-        .from('maps') // Confirme se o bucket no Supabase é 'maps' ou 'mapas'
+        .from('maps')
         .getPublicUrl(nomeDoFicheiro);
 
-      // 3. LOG DE TESTE - IMPORTANTE!
-      console.log("Destino no Banco:", destinoOriginal);
-      console.log("Ficheiro que o código gerou:", nomeDoFicheiro);
-      console.log("URL Final:", publicUrlData?.publicUrl);
+      console.log("O código agora está buscando por:", nomeDoFicheiro);
 
       if (publicUrlData && publicUrlData.publicUrl) {
         setMapUrl(publicUrlData.publicUrl);
