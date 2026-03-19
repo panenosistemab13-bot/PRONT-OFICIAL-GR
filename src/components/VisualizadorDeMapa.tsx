@@ -8,23 +8,42 @@ interface VisualizadorDeMapaProps {
 const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({ destination }) => {
   if (!destination) return null;
 
-  // Limpa o nome para o formato: rota_cidade_uf.pdf
+  // 1. Limpa o nome para bater com o Storage: "rota_gov_celso_ramos.pdf"
   const nomeArquivo = `rota_${destination.toLowerCase().trim()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/\./g, '').replace(/\s+/g, '_')}.pdf`;
 
-  // Apenas busca a URL (não faz escrita no banco)
+  // 2. Gera a URL pública do arquivo
   const { data } = supabase.storage
     .from('MAPAS-ROTAS')
     .getPublicUrl(nomeArquivo);
 
+  const urlFinal = data?.publicUrl;
+
   return (
-    <div style={{ width: '100%', height: '500px', marginTop: '10px' }}>
-      <iframe
-        src={`https://docs.google.com/viewer?url=${encodeURIComponent(data.publicUrl)}&embedded=true`}
-        style={{ width: '100%', height: '100%', border: '1px solid #ccc' }}
-        frameBorder="0"
-      />
+    <div style={{ width: '100%', marginTop: '20px', border: '1px solid #ccc', borderRadius: '8px', padding: '10px' }}>
+      <p style={{ fontWeight: 'bold', textAlign: 'center' }}>Mapa: {destination}</p>
+      
+      {/* Visualizador do Google */}
+      <div style={{ width: '100%', height: '500px', backgroundColor: '#eee' }}>
+        <iframe
+          src={`https://docs.google.com/viewer?url=${encodeURIComponent(urlFinal)}&embedded=true`}
+          style={{ width: '100%', height: '100%' }}
+          frameBorder="0"
+        />
+      </div>
+
+      {/* Botão de Emergência se o quadro acima falhar */}
+      <div style={{ textAlign: 'center', marginTop: '10px' }}>
+        <a 
+          href={urlFinal} 
+          target="_blank" 
+          rel="noreferrer" 
+          style={{ color: '#007bff', textDecoration: 'underline', fontSize: '14px' }}
+        >
+          Clique aqui para abrir o PDF original (Caso não carregue acima)
+        </a>
+      </div>
     </div>
   );
 };
