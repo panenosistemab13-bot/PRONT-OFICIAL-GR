@@ -26,7 +26,9 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({ onSave, onClear, sav
       const rect = canvas.parentElement?.getBoundingClientRect();
       if (rect) {
         canvas.width = rect.width;
-        canvas.height = 200;
+        // Aumentar a altura para facilitar a assinatura do nome completo, especialmente no mobile
+        const isMobile = window.innerWidth < 640;
+        canvas.height = isMobile ? 350 : 250;
       }
     };
 
@@ -85,7 +87,7 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({ onSave, onClear, sav
 
   return (
     <div className="w-full space-y-4">
-      <div className="bg-white overflow-hidden touch-none relative">
+      <div className="bg-white overflow-hidden touch-none relative border-2 border-dashed border-slate-200 rounded-2xl">
         <canvas
           ref={canvasRef}
           onMouseDown={startDrawing}
@@ -97,8 +99,8 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({ onSave, onClear, sav
           onTouchEnd={stopDrawing}
           className="w-full cursor-crosshair"
         />
-        <div className="absolute bottom-2 right-4 pointer-events-none">
-          <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Assine aqui</p>
+        <div className="absolute bottom-4 right-6 pointer-events-none">
+          <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Assine aqui seu nome completo</p>
         </div>
       </div>
       <div className="flex gap-3 p-4 bg-white border-t border-slate-100">
