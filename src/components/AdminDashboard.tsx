@@ -959,7 +959,7 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     doc.text("c. Qualquer desvio de trajeto sem prévia autorização é uma falta grave, e poderá ser levada em consideração para futuros carregamentos com a carga da 3corações.", 10, y);
     y += 8;
 
-    // Route Title
+    // Plano de Rota Title
     const origem = contract.data.origem || 'Santa Luzia/MG';
     const destino = contract.data.destino || 'Gov. Celso Ramos/SC';
     doc.setFont("helvetica", "bold");
@@ -980,11 +980,11 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
         .single();
 
       if (!mapError && mapData?.image_data) {
-        // Preencher todo o box (130x80) sem margens internas
-        doc.addImage(mapData.image_data, 'PNG', 10, y, 130, 80);
+        // Preencher todo o box (190x80) sem margens internas
+        doc.addImage(mapData.image_data, 'PNG', 10, y, 190, 80);
         mapLoaded = true;
       } else {
-        // Fallback para o storage se não encontrar na tabela maps (opcional, mas bom para transição)
+        // Fallback para o storage se não encontrar na tabela maps
         if (contract.data.mapa_arquivo) {
           const { data: { publicUrl } } = supabase.storage.from('mapas-rotas').getPublicUrl(contract.data.mapa_arquivo);
           const response = await fetch(publicUrl);
@@ -995,7 +995,7 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
               reader.onloadend = () => resolve(reader.result as string);
               reader.readAsDataURL(blob);
             });
-            doc.addImage(base64, 'PNG', 10, y, 130, 80);
+            doc.addImage(base64, 'PNG', 10, y, 190, 80);
             mapLoaded = true;
           }
         }
@@ -1005,47 +1005,15 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     }
 
     // Desenhar o box por cima (para manter a borda visível se houver imagem)
-    doc.rect(10, y, 130, 80);
+    doc.rect(10, y, 190, 80);
 
     if (!mapLoaded) {
       doc.setFontSize(10);
-      doc.text("MAPA DE TRAJETO", 75, y + 40, { align: 'center' });
+      doc.text("MAPA DE TRAJETO", pageWidth / 2, y + 40, { align: 'center' });
       doc.setFontSize(7);
-      doc.text("(Visualização do mapa indisponível)", 75, y + 45, { align: 'center' });
+      doc.text("(Visualização do mapa indisponível)", pageWidth / 2, y + 45, { align: 'center' });
     }
 
-    // Itinerary Table (Right side)
-    doc.rect(140, y, 60, 80);
-    doc.setFillColor(240, 240, 240);
-    doc.rect(140, y, 60, 6, 'F');
-    doc.rect(140, y, 60, 6);
-    doc.setFont("helvetica", "bold");
-    doc.text("Cidades do Itinerário :", 170, y + 4.5, { align: 'center' });
-    
-    // Processar o itinerário do contrato ou usar o padrão
-    const trajetoRaw = contract.data.trajeto || "";
-    const cities = trajetoRaw 
-      ? trajetoRaw.split(/[;|\n]+/).map(city => `» ${city.trim()}`).filter(city => city.length > 2)
-      : [
-          `» ${origem}`,
-          "» Carmópolis de Minas/MG",
-          "» Pouso Alegre/MG",
-          "» Bragança Paulista/SP",
-          "» Jarinu/SP",
-          "» Juquitiba/SP",
-          "» São José dos Pinhais/PR",
-          "» Joinville/SC",
-          `» ${destino}`
-        ];
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
-    let itY = y + 10;
-    cities.slice(0, 15).forEach(city => { // Limitar a 15 cidades para caber no box
-      doc.text(city, 142, itY);
-      doc.line(140, itY + 1, 200, itY + 1);
-      itY += 4.5;
-    });
     y += 85;
 
     // Forbidden Stops Table
