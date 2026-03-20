@@ -1,11 +1,13 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
 
 interface SignaturePadProps {
   onSave: (signature: string) => void;
   onClear?: () => void;
+  saving?: boolean;
 }
 
-export const SignaturePad: React.FC<SignaturePadProps> = ({ onSave, onClear }) => {
+export const SignaturePad: React.FC<SignaturePadProps> = ({ onSave, onClear, saving }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
 
@@ -108,9 +110,16 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({ onSave, onClear }) =
         </button>
         <button
           onClick={save}
-          className="flex-1 py-4 px-4 bg-indigo-600 text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all"
+          disabled={saving}
+          className="flex-1 py-4 px-4 bg-indigo-600 text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          Confirmar
+          {saving ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" /> Salvando...
+            </>
+          ) : (
+            'Confirmar'
+          )}
         </button>
       </div>
     </div>

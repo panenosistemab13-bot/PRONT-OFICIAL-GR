@@ -106,7 +106,10 @@ export const DriverSignature: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const [saving, setSaving] = useState(false);
+
   const handleSign = async (signature: string) => {
+    setSaving(true);
     try {
       const { error } = await supabase
         .from('contracts')
@@ -121,6 +124,8 @@ export const DriverSignature: React.FC = () => {
     } catch (err) {
       console.error("Erro ao salvar assinatura:", err);
       alert('Erro ao salvar assinatura.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -260,7 +265,12 @@ export const DriverSignature: React.FC = () => {
                   <div className="p-2 bg-indigo-100 rounded-lg">
                     <ClipboardCheck className="w-5 h-5 text-indigo-600" />
                   </div>
-                  <h2 className="font-bold text-slate-800">Checklist de Segurança Veicular</h2>
+                  <div>
+                    <h2 className="font-bold text-slate-800">Checklist de Segurança Veicular</h2>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                      Gerado em: {new Date(contract.created_at).toLocaleDateString('pt-BR')} às {new Date(contract.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
                 </div>
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">v8.1 STL</div>
               </div>
@@ -415,21 +425,29 @@ export const DriverSignature: React.FC = () => {
 
               <div className="prose prose-slate max-w-none">
                 <div className="text-sm leading-relaxed text-slate-600 space-y-6 text-justify bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                  <p>
-                    Declaro para os devidos fins, que fui contratado(a) pela transportadora, cujos dados seguem abaixo, para efetuar o transporte de carga do embarcador <span className="font-bold text-slate-800">TRÊS CORAÇÕES ALIMENTOS S.A., CAFÉ TRÊS CORAÇÕES S.A.</span>
-                  </p>
-                  <p>
-                    Estou ciente quanto às normas e procedimentos descritos nos itens a seguir. Confirmo que li e compreendi todas as regras repassadas quanto ao Gerenciamento de Riscos e me comprometo a cumpri-las em sua totalidade.
-                  </p>
-                  <p>
-                    Comprometo-me a entregar a carga ao destinatário, em iguais condições em que recebi. Além de, no decorrer do percurso, colher carimbo e assinatura em todos os Postos Fiscais.
-                  </p>
-                  <p>
-                    Estou ciente que, em caso de descumprimento das normas indicadas neste documento, poderei ser responsabilizado civil e criminalmente pelos danos causados à carga em caso de sinistro, estando eu em desacordo com as regras impostas a mim. Dessa forma, fica a critério do embarcador me bloquear ou não para carregamento através da Central de Gerenciamento de Riscos.
-                  </p>
-                  <p className="font-medium">
-                    Também estou ciente de que o veículo não pode ser retirado do local de descarga e/ou estacionamento sem autorização da Logística da Filial.
-                  </p>
+                  {contract.data.termo_personalizado ? (
+                    <p className="whitespace-pre-line font-medium text-slate-800">
+                      {contract.data.termo_personalizado}
+                    </p>
+                  ) : (
+                    <>
+                      <p>
+                        Declaro para os devidos fins, que fui contratado(a) pela transportadora, cujos dados seguem abaixo, para efetuar o transporte de carga do embarcador <span className="font-bold text-slate-800">TRÊS CORAÇÕES ALIMENTOS S.A., CAFÉ TRÊS CORAÇÕES S.A.</span>
+                      </p>
+                      <p>
+                        Estou ciente quanto às normas e procedimentos descritos nos itens a seguir. Confirmo que li e compreendi todas as regras repassadas quanto ao Gerenciamento de Riscos e me comprometo a cumpri-las em sua totalidade.
+                      </p>
+                      <p>
+                        Comprometo-me a entregar a carga ao destinatário, em iguais condições em que recebi. Além de, no decorrer do percurso, colher carimbo e assinatura em todos os Postos Fiscais.
+                      </p>
+                      <p>
+                        Estou ciente que, em caso de descumprimento das normas indicadas neste documento, poderei ser responsabilizado civil e criminalmente pelos danos causados à carga em caso de sinistro, estando eu em desacordo com as regras impostas a mim. Dessa forma, fica a critério do embarcador me bloquear ou não para carregamento através da Central de Gerenciamento de Riscos.
+                      </p>
+                      <p className="font-medium">
+                        Também estou ciente de que o veículo não pode ser retirado do local de descarga e/ou estacionamento sem autorização da Logística da Filial.
+                      </p>
+                    </>
+                  )}
                 </div>
 
                 <div className="mt-8 space-y-4">
@@ -477,29 +495,35 @@ export const DriverSignature: React.FC = () => {
                       <span className="text-sm font-bold text-indigo-900">{contract.data.destino || 'Gov. Celso Ramos/SC'}</span>
                     </div>
                     
-                    <div className="mt-6 border-2 border-black">
-                      <div className="bg-gray-100 p-2 font-bold text-center border-b-2 border-black">
-                        PLANO DE ROTA: {contract.data.destino}
+                    <div className="mt-6 space-y-4">
+                      <div className="flex items-center gap-2 border-b border-indigo-100 pb-2">
+                        <Truck className="w-4 h-4 text-indigo-500" />
+                        <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-widest">Plano de Rota</h4>
                       </div>
-                      <div className="p-0">
-                        {contract.data.destino ? (
-                          <VisualizadorDeMapa destination={contract.data.destino} />
-                        ) : (
-                          <p className="text-red-500 font-bold text-center p-4">Destino não informado para carregar o mapa.</p>
-                        )}
-                      </div>
+                      
+                      {contract.data.destino ? (
+                        <VisualizadorDeMapa destination={contract.data.destino} />
+                      ) : (
+                        <div className="p-6 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-center justify-center">
+                          <AlertCircle className="w-5 h-5 text-red-500" />
+                          <p className="text-xs font-bold text-red-700">Destino não informado para carregar o mapa.</p>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="mt-6 space-y-2">
-                      <p className="text-[9px] font-bold text-red-500 uppercase tracking-widest">Paradas Proibidas</p>
-                      <div className="bg-red-50 border border-red-100 rounded-xl p-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-red-700">
+                    <div className="mt-8 space-y-3">
+                      <div className="flex items-center gap-2 border-b border-red-100 pb-2">
+                        <AlertCircle className="w-4 h-4 text-red-500" />
+                        <h4 className="text-xs font-bold text-red-900 uppercase tracking-widest">Paradas Proibidas</h4>
+                      </div>
+                      <div className="bg-red-50 border border-red-100 rounded-2xl p-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-[10px] text-red-700 font-medium">
                           <div>• Cambuí/MG</div>
                           <div>• Campanha/MG</div>
                           <div>• Embu das Artes-SP</div>
                           <div>• Itatiaiuçu-MG</div>
                           <div>• Carmópolis de Minas-MG</div>
-                          <div>• Guarulhos-SP (exceto P. Sakamoto)</div>
+                          <div>• Guarulhos-SP</div>
                           <div>• Itaquara-MG</div>
                           <div>• Igarapé-MG</div>
                           <div>• Itapecerica da Serra-SP</div>
@@ -509,8 +533,10 @@ export const DriverSignature: React.FC = () => {
                           <div>• Pouso Alegre-MG</div>
                           <div>• Varginha-MG</div>
                         </div>
-                        <div className="mt-4 pt-4 border-t border-red-200 font-bold text-center">
-                          Proibido Parada entre as cidades de Joinville/SC até Palhoça/SC
+                        <div className="mt-6 pt-4 border-t border-red-200 text-center">
+                          <p className="text-xs font-bold text-red-800 uppercase tracking-tight">
+                            Proibido Parada entre as cidades de Joinville/SC até Palhoça/SC
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -565,7 +591,7 @@ export const DriverSignature: React.FC = () => {
                   </div>
                 </div>
 
-                <SignaturePad onSave={handleSign} />
+                <SignaturePad onSave={handleSign} saving={saving} />
 
                 <div className="flex justify-center">
                   <button

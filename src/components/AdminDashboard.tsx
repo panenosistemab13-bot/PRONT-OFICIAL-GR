@@ -28,7 +28,6 @@ import {
   Info,
   Coffee
 } from 'lucide-react';
-import { parseDriverLine } from '../services/geminiService';
 import { supabase } from '../services/supabase';
 import { DriverData, Contract } from '../types';
 import { 
@@ -177,7 +176,53 @@ export const AdminDashboard: React.FC = () => {
     if (!inputText.trim()) return;
     setLoading(true);
     try {
-      const parsedInfo = await parseDriverLine(inputText);
+      // Passo 2 & 3: Substituir a Função da IA pela Função de Texto (Parsing Manual)
+      // Dividimos a linha da planilha (geralmente separada por TAB ao colar do Excel)
+      const parts = inputText.split(/\t|;/).map(p => p.trim());
+      
+      const parsedInfo: DriverData = {
+        mes: parts[0] || '',
+        origem: parts[1] || '',
+        dia: parts[2] || '',
+        data: parts[3] || '',
+        contato_whats: parts[4] || '',
+        hora_liberado: parts[5] || '',
+        status: parts[6] || '',
+        modelo_carreta: parts[7] || '',
+        modelo_cavalo: parts[8] || '',
+        fez_contato: parts[9] || '',
+        destino: parts[10] || '',
+        transportador: parts[11] || '',
+        cavalo: parts[12] || '',
+        carreta: parts[13] || '',
+        motorista: parts[14] || '',
+        cpf: parts[15] || '',
+        rg: parts[16] || '',
+        cnh: parts[17] || '',
+        telefone: parts[18] || '',
+        vigencia_cadastro: parts[19] || '',
+        vinculo: parts[20] || '',
+        uf_placas: parts[21] || '',
+        tecnologia: parts[22] || '',
+      };
+
+      // Passo 1: Criar o "Termo Padrão" no Código
+      const termoTemplate = `
+TERMO DE RESPONSABILIDADE E RETIRADA
+Eu, {nome_motorista}, portador da CNH {cnh}, declaro que recebi o veículo 
+de placa {placa} em perfeitas condições operacionais na data de {data}.
+Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
+`;
+
+      // Preencher os dados automaticamente usando .replace()
+      const termoGerado = termoTemplate
+        .replace('{nome_motorista}', parsedInfo.motorista || 'NOME_DO_MOTORISTA')
+        .replace('{cnh}', parsedInfo.cnh || '000000000')
+        .replace('{placa}', parsedInfo.cavalo || 'ABC-0000')
+        .replace('{data}', parsedInfo.data || new Date().toLocaleDateString('pt-BR'));
+
+      console.log("Termo Gerado com Sucesso:", termoGerado);
+
       const newId = Math.random().toString(36).substring(2, 9);
       
       // Identifica qual mapa usar com base no destino da planilha
