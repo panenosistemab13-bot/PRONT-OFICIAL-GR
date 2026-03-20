@@ -179,6 +179,7 @@ export const AdminDashboard: React.FC = () => {
       // Passo 2 & 3: Substituir a Função da IA pela Função de Texto (Parsing Manual)
       // Dividimos a linha da planilha (geralmente separada por TAB ao colar do Excel)
       const parts = inputText.split(/\t|;/).map(p => p.trim());
+      console.log("Colunas detectadas:", parts);
       
       const parsedInfo: DriverData = {
         mes: parts[0] || '',
@@ -195,15 +196,15 @@ export const AdminDashboard: React.FC = () => {
         transportador: parts[11] || '',
         cavalo: parts[12] || '',
         carreta: parts[13] || '',
-        motorista: parts[14] || '',
-        cpf: parts[15] || '', // Verifique se o índice 15 está correto para o CPF na sua planilha
+        motorista: parts[21] || parts[14] || '', // Ajustado: O nome parece estar no índice 21
+        cpf: parts[22] || parts[15] || '',       // Ajustado: O CPF parece estar no índice 22
         rg: parts[16] || '',
         cnh: parts[17] || '',
         telefone: parts[18] || '',
         vigencia_cadastro: parts[19] || '',
         vinculo: parts[20] || '',
-        uf_placas: parts[21] || '',
-        tecnologia: parts[22] || '',
+        uf_placas: parts[14] || '',             // Movendo o valor "24" para cá se for o caso
+        tecnologia: parts[23] || '',            // Tecnologia deve estar após o CPF
       };
 
       // Passo 1: Criar o "Termo Padrão" no Código
