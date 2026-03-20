@@ -196,7 +196,7 @@ export const AdminDashboard: React.FC = () => {
         cavalo: parts[12] || '',
         carreta: parts[13] || '',
         motorista: parts[14] || '',
-        cpf: parts[15] || '',
+        cpf: parts[15] || '', // Verifique se o índice 15 está correto para o CPF na sua planilha
         rg: parts[16] || '',
         cnh: parts[17] || '',
         telefone: parts[18] || '',
@@ -209,7 +209,7 @@ export const AdminDashboard: React.FC = () => {
       // Passo 1: Criar o "Termo Padrão" no Código
       const termoTemplate = `
 TERMO DE RESPONSABILIDADE E RETIRADA
-Eu, {nome_motorista}, portador da CNH {cnh}, declaro que recebi o veículo 
+Eu, {nome_motorista}, portador do CPF {cpf} e CNH {cnh}, declaro que recebi o veículo 
 de placa {placa} em perfeitas condições operacionais na data de {data}.
 Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
 `;
@@ -217,6 +217,7 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
       // Preencher os dados automaticamente usando .replace()
       const termoGerado = termoTemplate
         .replace('{nome_motorista}', parsedInfo.motorista || 'NOME_DO_MOTORISTA')
+        .replace('{cpf}', parsedInfo.cpf || '000.000.000-00')
         .replace('{cnh}', parsedInfo.cnh || '000000000')
         .replace('{placa}', parsedInfo.cavalo || 'ABC-0000')
         .replace('{data}', parsedInfo.data || new Date().toLocaleDateString('pt-BR'));
@@ -238,7 +239,8 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
           motorista: parsedInfo.motorista || "NOME_DO_MOTORISTA", // Pegar do seu input/planilha
           placa: parsedInfo.cavalo || "ABC-1234",             // Pegar do seu input/planilha
           cpf: parsedInfo.cpf || "000.000.000-00",          // Pegar do seu input/planilha
-          mapa_arquivo: mapaArquivo
+          mapa_arquivo: mapaArquivo,
+          termo_personalizado: termoGerado // SALVANDO O TERMO GERADO COM .REPLACE()
         },
         onbase_status: false,
         created_at: new Date().toISOString()
