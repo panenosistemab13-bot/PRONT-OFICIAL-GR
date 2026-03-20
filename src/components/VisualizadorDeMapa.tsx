@@ -1,31 +1,93 @@
 import React from 'react';
 import { supabase } from '../services/supabase';
 
-const VisualizadorDeMapa = ({ destination }: { destination: string }) => {
-  if (!destination) return null;
+const VisualizadorDeMapa = ({ destination, filename }: { destination: string; filename?: string }) => {
+  const [error, setError] = React.useState(false);
+  if (!destination && !filename) return null;
 
-  // Formata o nome exatamente como o computador entende
-  const base = destination.toLowerCase().trim()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/[.|/]/g, '').replace(/\s+/g, '_');
+  // Se o filename já foi calculado no AdminDashboard, usamos ele.
+  // Caso contrário, ou se for o padrão, tentamos recalcular com base no destino.
+  let nomeArquivo = filename;
   
-  const nomeArquivo = `rota_${base}.pdf`;
-  const { data } = supabase.storage.from('MAPAS-ROTAS').getPublicUrl(nomeArquivo);
+  const MAPA_REFERENCIA_LOCAL = {
+    "NATAL - VIA MONTES CLAROS": "NATAL_MONTES_CLAROS.png",
+    "NATAL - VIA ANTONIO DIAS": "NATAL_ANTONIO_DIAS.png",
+    "NATAL - EUSEBIO": "NATAL_EUSEBIO.png",
+    "SALVADOR - VIA CURVELO": "SALVADOR_CURVELO.png",
+    "SALVADOR - VIA ANTONIO DIAS": "SALVADOR_ANTONIO_DIAS.png",
+    "XAXIM": "XAXIM.png",
+    "PORTO VELHO": "PORTO VELHO.png",
+    "BEBEDOURO": "BEBEDOURO.png",
+    "BRASILIA": "BRASILIA.png",
+    "CAMBE": "CAMBE.png",
+    "CAMPO GRANDE": "CAMPO GRANDE.png",
+    "CASTRO": "CASTRO.png",
+    "CUIABA": "CUIABA.png",
+    "CURITIBA": "CURITIBA.png",
+    "NATAL": "NATAL.png",
+    "EUSEBIO": "EUSEBIO.png",
+    "GOV. CELSO RAMOS": "GOV. CELSO RAMOS.png",
+    "GRAVATAI": "GRAVATAI.png",
+    "GUARULHOS": "GUARULHOS.png",
+    "JUIZ DE FORA": "JUIZ DE FORA.png",
+    "LINHARES": "LINHARES.png",
+    "MONTES CLAROS": "MONTES CLAROS.png",
+    "ANTONIO DIAS": "ANTONIO DIAS.png",
+    "PIRACICABA": "PIRACICABA.png",
+    "VITORIA": "VITORIA.png",
+    "RIO DE JANEIRO": "RIO DE JANEIRO.png",
+    "SALVADOR": "SALVADOR.png",
+    "PAVUNA": "PAVUNA.png",
+    "FRANCA": "FRANCA.png",
+    "PINHAIS": "PINHAIS.png",
+    "MARILIA": "MARILIA.png",
+    "LONDRINA": "LONDRINA.png",
+    "BELO HORIZONTE": "BELO HORIZONTE.png",
+    "SANTA LUZIA": "SANTA LUZIA.png"
+  };
+
+  if (!nomeArquivo || nomeArquivo === "PADRAO.png") {
+    const destinoInfo = (destination || "").toUpperCase();
+    const nomeChave = Object.keys(MAPA_REFERENCIA_LOCAL).find(key => destinoInfo.includes(key));
+    nomeArquivo = nomeChave ? MAPA_REFERENCIA_LOCAL[nomeChave as keyof typeof MAPA_REFERENCIA_LOCAL] : "PADRAO.png";
+  } else {
+    // Se vier do AdminDashboard com .pdf, trocamos para .png para exibição direta
+    nomeArquivo = nomeArquivo.replace('.pdf', '.png');
+  }
+  
+  const { data } = supabase.storage.from('mapas-rotas').getPublicUrl(nomeArquivo);
 
   return (
-    <div className="mt-5 p-4 border border-slate-200 rounded-2xl text-center bg-white shadow-sm">
-      <p className="text-slate-600 text-sm mb-3">Mapa para: <strong className="text-slate-900">{destination}</strong></p>
+    <div className="mt-5 p-2 border border-slate-200 rounded-2xl text-center bg-white shadow-sm overflow-hidden">
+      <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-2">Mapa de Rota: {destination}</p>
       
-      <a 
-        href={data.publicUrl} 
-        target="_blank" 
-        rel="noreferrer"
-        className="block w-full py-3 px-4 bg-indigo-600 text-white rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all"
-      >
-        ABRIR MAPA PDF
-      </a>
+      <div className="relative rounded-xl overflow-hidden border border-slate-100 bg-slate-50 min-h-[100px] flex items-center justify-center">
+        {!error ? (
+          <img 
+            src={data.publicUrl} 
+            alt={`Mapa para ${destination}`}
+            className="w-full h-auto block"
+            referrerPolicy="no-referrer"
+            onError={() => setError(true)}
+          />
+        ) : (
+          <div className="p-4 text-center space-y-2">
+            <p className="text-xs text-slate-400 font-medium italic">Mapa não encontrado para esta rota.</p>
+            <p className="text-[9px] text-slate-300 uppercase tracking-wider font-bold">Arquivo: {nomeArquivo}</p>
+          </div>
+        )}
+      </div>
       
-      <p className="text-[10px] text-slate-400 mt-3 font-mono uppercase tracking-wider">Arquivo: {nomeArquivo}</p>
+      {!error && (
+        <a 
+          href={data.publicUrl} 
+          target="_blank" 
+          rel="noreferrer"
+          className="mt-3 inline-flex items-center gap-2 text-[10px] font-bold text-indigo-600 uppercase tracking-widest hover:text-indigo-700"
+        >
+          Ver em tela cheia
+        </a>
+      )}
     </div>
   );
 };

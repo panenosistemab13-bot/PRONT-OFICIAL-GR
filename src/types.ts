@@ -39,6 +39,7 @@ export interface DriverData {
   check_list?: string;
   valido?: string;
   dias?: string;
+  mapa_arquivo?: string;
 }
 
 export interface Contract {

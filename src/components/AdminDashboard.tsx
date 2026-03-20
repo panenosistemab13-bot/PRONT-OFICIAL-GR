@@ -80,27 +80,40 @@ const SECURITY_PHRASES = [
 ];
 
 const MAPA_REFERENCIA = {
-  "XAXIM": "ROTA XAXIM-SC (NUTRATA).pdf",
-  "PORTO VELHO": "ROTA PORTO VELHO-RO.pdf",
-  "BEBEDOURO": "ROTA BEBEDOURO-SP (COMFRIO).pdf",
-  "BRASILIA": "ROTA BRASÍLIA.pdf",
-  "CAMBE": "ROTA CAMBÉ-PR (IRMÃOS MUFFATO).pdf",
-  "CAMPO GRANDE": "ROTA CAMPO GRANDE.pdf",
-  "CASTRO": "ROTA CASTRO-PR.pdf",
-  "CUIABA": "ROTA CUIABÁ.pdf",
-  "CURITIBA": "ROTA CURITIBA-PR.pdf",
-  "NATAL": "ROTA NATAL-RN.pdf",
-  "EUSEBIO": "ROTA EUSEBIO-CE.pdf",
-  "GOV. CELSO RAMOS": "ROTA GOV CELSO RAMOS-SC.pdf",
-  "GRAVATAI": "ROTA GRAVATAI-RS.pdf",
-  "GUARULHOS": "ROTA GUARULHOS-SP.pdf",
-  "JUIZ DE FORA": "ROTA JUIZ DE FORA-MG.pdf",
-  "LINHARES": "ROTA LINHARES-ES.pdf",
-  "MONTES CLAROS": "ROTA MONTES CLAROS-MG.pdf",
-  "ANTONIO DIAS": "ROTA ANTONIO DIAS-MG.pdf",
-  "PIRACICABA": "ROTA PIRACICABA-SP.pdf",
-  "VITORIA": "ROTA VITORIA-ES.pdf",
-  "RIO DE JANEIRO": "ROTA RIO DE JANEIRO-RJ.pdf"
+  "NATAL - VIA MONTES CLAROS": "NATAL_MONTES_CLAROS.png",
+  "NATAL - VIA ANTONIO DIAS": "NATAL_ANTONIO_DIAS.png",
+  "NATAL - EUSEBIO": "NATAL_EUSEBIO.png",
+  "SALVADOR - VIA CURVELO": "SALVADOR_CURVELO.png",
+  "SALVADOR - VIA ANTONIO DIAS": "SALVADOR_ANTONIO_DIAS.png",
+  "XAXIM": "XAXIM.png",
+  "PORTO VELHO": "PORTO VELHO.png",
+  "BEBEDOURO": "BEBEDOURO.png",
+  "BRASILIA": "BRASILIA.png",
+  "CAMBE": "CAMBE.png",
+  "CAMPO GRANDE": "CAMPO GRANDE.png",
+  "CASTRO": "CASTRO.png",
+  "CUIABA": "CUIABA.png",
+  "CURITIBA": "CURITIBA.png",
+  "NATAL": "NATAL.png",
+  "EUSEBIO": "EUSEBIO.png",
+  "GOV. CELSO RAMOS": "GOV. CELSO RAMOS.png",
+  "GRAVATAI": "GRAVATAI.png",
+  "GUARULHOS": "GUARULHOS.png",
+  "JUIZ DE FORA": "JUIZ DE FORA.png",
+  "LINHARES": "LINHARES.png",
+  "MONTES CLAROS": "MONTES CLAROS.png",
+  "ANTONIO DIAS": "ANTONIO DIAS.png",
+  "PIRACICABA": "PIRACICABA.png",
+  "VITORIA": "VITORIA.png",
+  "RIO DE JANEIRO": "RIO DE JANEIRO.png",
+  "SALVADOR": "SALVADOR.png",
+  "PAVUNA": "PAVUNA.png",
+  "FRANCA": "FRANCA.png",
+  "PINHAIS": "PINHAIS.png",
+  "MARILIA": "MARILIA.png",
+  "LONDRINA": "LONDRINA.png",
+  "BELO HORIZONTE": "BELO HORIZONTE.png",
+  "SANTA LUZIA": "SANTA LUZIA.png"
 };
 
 export const AdminDashboard: React.FC = () => {
@@ -242,7 +255,7 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
       // Identifica qual mapa usar com base no destino da planilha
       const destinoInfo = (parsedInfo.destino || "").toUpperCase();
       const nomeArquivoMapa = Object.keys(MAPA_REFERENCIA).find(key => destinoInfo.includes(key));
-      const mapaArquivo = nomeArquivoMapa ? MAPA_REFERENCIA[nomeArquivoMapa as keyof typeof MAPA_REFERENCIA] : "PADRAO.pdf";
+      const mapaArquivo = nomeArquivoMapa ? MAPA_REFERENCIA[nomeArquivoMapa as keyof typeof MAPA_REFERENCIA] : "PADRAO.png";
       
       // Objeto com os dados que você colou da planilha
       const contractData = {
