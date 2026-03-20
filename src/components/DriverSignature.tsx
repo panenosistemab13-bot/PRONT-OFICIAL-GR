@@ -506,6 +506,9 @@ export const DriverSignature: React.FC = () => {
                           destination={contract.data.destino} 
                           itinerary={contract.data.trajeto} 
                           mapa_arquivo={contract.data.mapa_arquivo}
+                          driverName={contract.data.motorista}
+                          driverCpf={contract.data.cpf}
+                          showWatermark={true}
                         />
                       ) : (
                         <div className="p-6 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-center justify-center">
