@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/supabase';
 
+import { LOGO_3_CORACOES } from '../constants';
+
 interface VisualizadorDeMapaProps {
   destination: string;
   itinerary?: string;
@@ -75,6 +77,11 @@ const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({
     }
   };
 
+  // Processar o itinerário
+  const cities = itinerary 
+    ? itinerary.split(/[;|\n]+/).map(city => city.trim()).filter(city => city.length > 0)
+    : [];
+
   // Componente de Marca d'Água Repetida
   const WatermarkOverlay = () => {
     if (!showWatermark) return null;
@@ -82,7 +89,7 @@ const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({
     const watermarkText = `CONFIDENCIAL - LOGÍSTICA 3CORAÇÕES | ${driverName || 'MOTORISTA'} | ${driverCpf || 'CPF'}`;
     
     return (
-      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-[0.12] select-none z-10">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-[0.15] select-none z-10">
         <div 
           className="w-[200%] h-[200%] -top-1/2 -left-1/2 flex flex-wrap content-start justify-center gap-x-24 gap-y-32 rotate-[-25deg]"
         >
@@ -97,18 +104,37 @@ const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({
   };
 
   return (
-    <div className="w-full bg-white border border-slate-300 rounded-lg overflow-hidden shadow-sm font-sans relative">
-      {/* Cabeçalho do Relatório */}
-      <div className="bg-slate-100 p-3 border-b border-slate-300 flex justify-between items-center relative z-20">
-        <h3 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-          Plano de Rota: {destination}
+    <div className="w-full bg-white border-2 border-slate-800 rounded-none overflow-hidden shadow-none font-sans relative">
+      {/* Cabeçalho Profissional (Logo + Título) */}
+      <div className="border-b-2 border-slate-800 flex items-center">
+        <div className="w-32 p-2 border-r-2 border-slate-800 flex justify-center items-center bg-white">
+          <img src={LOGO_3_CORACOES} alt="3corações" className="h-12 w-auto object-contain" referrerPolicy="no-referrer" />
+        </div>
+        <div className="flex-1 p-4 bg-white text-center">
+          <h2 className="text-sm md:text-base font-black text-slate-900 uppercase tracking-tight">
+            PLANO DE ROTA GERENCIAMENTO DE RISCOS - GR
+          </h2>
+        </div>
+      </div>
+
+      {/* Orientações */}
+      <div className="p-3 bg-white border-b-2 border-slate-800 text-[10px] leading-tight text-slate-800 space-y-1">
+        <p className="font-bold">Orientações sobre o PLANO DE ROTA</p>
+        <p>a. É proibida parada nos primeiros 150 km iniciais, exceto problema mecânico/elétrico;</p>
+        <p>b. Respeitar o horário de rodagem, no período de 05h00min às 22h00min para produto acabado e 05h00min às 19h00min para o transporte de grãos;</p>
+        <p>c. Qualquer desvio de trajeto sem prévia autorização é uma falta grave.</p>
+      </div>
+
+      {/* Título da Rota */}
+      <div className="bg-slate-100 p-2 border-b-2 border-slate-800 text-center">
+        <h3 className="text-[11px] font-bold text-slate-900 uppercase">
+          Plano de Rota ({destination})
         </h3>
-        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Relatório Oficial GR</span>
       </div>
 
       <div className="flex flex-col relative">
-        {/* Área do Mapa - Agora ocupando largura total */}
-        <div className="w-full p-1 bg-slate-50 min-h-[300px] flex items-center justify-center relative overflow-hidden">
+        {/* Área do Mapa */}
+        <div className="w-full p-1 bg-white min-h-[350px] flex items-center justify-center relative overflow-hidden">
           {loading ? (
             <div className="flex flex-col items-center gap-2">
               <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>

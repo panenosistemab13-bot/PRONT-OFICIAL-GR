@@ -921,32 +921,34 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     const pageWidth = doc.internal.pageSize.getWidth();
     let y = 15;
 
-    // Header Section
+    // Header Section (Logo + Title)
     doc.setDrawColor(0);
-    doc.setLineWidth(0.2);
-    doc.rect(10, y, 190, 15);
+    doc.setLineWidth(0.3);
+    doc.rect(10, y, 190, 18);
+    doc.line(45, y, 45, y + 18);
     
     // Logo Image
     try {
-      doc.addImage(LOGO_3_CORACOES, 'PNG', 19, y + 1.5, 12, 12);
+      doc.addImage(LOGO_3_CORACOES, 'PNG', 15, y + 2, 25, 14);
     } catch (e) {
       doc.setFillColor(227, 38, 54);
-      doc.circle(25, y + 7.5, 6, 'F');
+      doc.circle(27.5, y + 9, 6, 'F');
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(5);
       doc.setFont("helvetica", "bold");
-      doc.text("3", 24, y + 7, { align: 'center' });
-      doc.text("corações", 25, y + 10, { align: 'center' });
+      doc.text("3", 26.5, y + 8.5, { align: 'center' });
+      doc.text("corações", 27.5, y + 11.5, { align: 'center' });
     }
     doc.setTextColor(0, 0, 0);
 
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
-    doc.text("PLANO DE ROTA GERENCIAMENTO DE RISCOS - GR", pageWidth / 2 + 10, y + 8, { align: 'center' });
-    y += 20;
+    doc.text("PLANO DE ROTA GERENCIAMENTO DE RISCOS - GR", 122.5, y + 10, { align: 'center' });
+    y += 18;
 
     // Orientations
-    doc.setFontSize(8);
+    y += 5;
+    doc.setFontSize(8.5);
     doc.setFont("helvetica", "bold");
     doc.text("Orientações sobre o PLANO DE ROTA", 10, y);
     y += 4;
@@ -959,17 +961,24 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     doc.text("c. Qualquer desvio de trajeto sem prévia autorização é uma falta grave, e poderá ser levada em consideração para futuros carregamentos com a carga da 3corações.", 10, y);
     y += 8;
 
-    // Plano de Rota Title
+    // Route Title Bar
     const origem = contract.data.origem || 'Santa Luzia/MG';
     const destino = contract.data.destino || 'Gov. Celso Ramos/SC';
     doc.setFont("helvetica", "bold");
     doc.setFillColor(240, 240, 240);
-    doc.rect(10, y, 190, 6, 'F');
-    doc.rect(10, y, 190, 6);
-    doc.text(`Plano de Rota (${origem} x ${destino})`, pageWidth / 2, y + 4.5, { align: 'center' });
-    y += 6;
+    doc.rect(10, y, 190, 7, 'F');
+    doc.rect(10, y, 190, 7);
+    doc.text(`Plano de Rota (${origem} x ${destino})`, pageWidth / 2, y + 5, { align: 'center' });
+    y += 7;
 
-    // Tentar carregar o mapa real da tabela 'maps'
+    // Map & Itinerary Section
+    const mapWidth = 140;
+    const itineraryWidth = 50;
+    const sectionHeight = 100;
+
+    // Map Area (Left)
+    doc.rect(10, y, mapWidth, sectionHeight);
+    
     let mapLoaded = false;
     try {
       const { data: mapData, error: mapError } = await supabase
@@ -980,49 +989,72 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
         .single();
 
       if (!mapError && mapData?.image_data) {
-        // Preencher todo o box (190x80) sem margens internas
-        doc.addImage(mapData.image_data, 'PNG', 10, y, 190, 80);
+        doc.addImage(mapData.image_data, 'PNG', 11, y + 1, mapWidth - 2, sectionHeight - 2);
         mapLoaded = true;
-      } else {
-        // Fallback para o storage se não encontrar na tabela maps
-        if (contract.data.mapa_arquivo) {
-          const { data: { publicUrl } } = supabase.storage.from('mapas-rotas').getPublicUrl(contract.data.mapa_arquivo);
-          const response = await fetch(publicUrl);
-          if (response.ok) {
-            const blob = await response.blob();
-            const base64 = await new Promise<string>((resolve) => {
-              const reader = new FileReader();
-              reader.onloadend = () => resolve(reader.result as string);
-              reader.readAsDataURL(blob);
-            });
-            doc.addImage(base64, 'PNG', 10, y, 190, 80);
-            mapLoaded = true;
-          }
+      } else if (contract.data.mapa_arquivo) {
+        const { data: { publicUrl } } = supabase.storage.from('mapas-rotas').getPublicUrl(contract.data.mapa_arquivo);
+        const response = await fetch(publicUrl);
+        if (response.ok) {
+          const blob = await response.blob();
+          const base64 = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
+          doc.addImage(base64, 'PNG', 11, y + 1, mapWidth - 2, sectionHeight - 2);
+          mapLoaded = true;
         }
       }
     } catch (e) {
       console.error("Erro ao carregar mapa para o PDF:", e);
     }
 
-    // Desenhar o box por cima (para manter a borda visível se houver imagem)
-    doc.rect(10, y, 190, 80);
-
     if (!mapLoaded) {
       doc.setFontSize(10);
-      doc.text("MAPA DE TRAJETO", pageWidth / 2, y + 40, { align: 'center' });
+      doc.text("MAPA DE TRAJETO", 10 + mapWidth / 2, y + sectionHeight / 2, { align: 'center' });
       doc.setFontSize(7);
-      doc.text("(Visualização do mapa indisponível)", pageWidth / 2, y + 45, { align: 'center' });
+      doc.text("(Visualização do mapa indisponível)", 10 + mapWidth / 2, y + sectionHeight / 2 + 5, { align: 'center' });
     }
 
-    y += 85;
-
-    // Forbidden Stops Table
+    // Itinerary Table (Right)
+    doc.rect(10 + mapWidth, y, itineraryWidth, sectionHeight);
     doc.setFillColor(240, 240, 240);
-    doc.rect(10, y, 190, 6, 'F');
-    doc.rect(10, y, 190, 6);
+    doc.rect(10 + mapWidth, y, itineraryWidth, 6, 'F');
+    doc.rect(10 + mapWidth, y, itineraryWidth, 6);
     doc.setFont("helvetica", "bold");
-    doc.text("PARADAS PROIBIDAS", pageWidth / 2, y + 4.5, { align: 'center' });
-    y += 6;
+    doc.setFontSize(7.5);
+    doc.text("Cidades do Itinerário :", 10 + mapWidth + itineraryWidth / 2, y + 4, { align: 'center' });
+    
+    const trajetoRaw = contract.data.trajeto || "";
+    const cities = trajetoRaw 
+      ? trajetoRaw.split(/[;|\n]+/).map(city => `» ${city.trim()}`).filter(city => city.length > 2)
+      : [`» ${origem}`, "» Carmópolis de Minas/MG", "» Pouso Alegre/MG", "» Bragança Paulista/SP", "» Jarinu/SP", "» Juquitiba/SP", "» São José dos Pinhais/PR", "» Joinville/SC", `» ${destino}`];
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    let itY = y + 10;
+    cities.slice(0, 20).forEach(city => {
+      doc.text(city, 10 + mapWidth + 2, itY);
+      doc.line(10 + mapWidth, itY + 1, 10 + mapWidth + itineraryWidth, itY + 1);
+      itY += 4.5;
+    });
+    
+    // Fill remaining lines for table look
+    while (itY < y + sectionHeight) {
+      doc.line(10 + mapWidth, itY + 1, 10 + mapWidth + itineraryWidth, itY + 1);
+      itY += 4.5;
+    }
+
+    y += sectionHeight + 5;
+
+    // Forbidden Stops Section
+    doc.setFillColor(240, 240, 240);
+    doc.rect(10, y, 190, 7, 'F');
+    doc.rect(10, y, 190, 7);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.text("PARADAS PROIBIDAS", pageWidth / 2, y + 5, { align: 'center' });
+    y += 7;
 
     const forbiddenStops = [
       ["Cambuí/MG", "Campanha/MG", "Embu das Artes-SP"],
@@ -1032,6 +1064,7 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
       ["Pouso Alegre-MG", "Varginha-MG", ""]
     ];
 
+    doc.setFontSize(7);
     forbiddenStops.forEach(row => {
       doc.rect(10, y, 63.3, 6);
       doc.rect(73.3, y, 63.3, 6);
@@ -1043,32 +1076,41 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
       y += 6;
     });
 
-    // Footer Warning
+    y += 2;
     doc.setFont("helvetica", "bold");
-    doc.text("Proibido Parada entre as cidades de Joinville/SC até Palhoça/SC", pageWidth / 2, y + 6, { align: 'center' });
-    doc.line(60, y + 7, 150, y + 7);
-    y += 12;
+    doc.setFontSize(8);
+    doc.text("Proibido Parada entre as cidades de Joinville/SC até Palhoça/SC", pageWidth / 2, y + 4, { align: 'center' });
+    doc.line(60, y + 5, 150, y + 5);
+    y += 10;
 
     // Bottom Data Table
     doc.setFillColor(240, 240, 240);
-    doc.rect(10, y, 190, 6, 'F');
-    doc.rect(10, y, 190, 6);
-    doc.text("DADOS DA VIAGEM", pageWidth / 2, y + 4.5, { align: 'center' });
-    y += 6;
+    doc.rect(10, y, 190, 7, 'F');
+    doc.rect(10, y, 190, 7);
+    doc.setFontSize(8.5);
+    doc.text("DADOS DA VIAGEM", pageWidth / 2, y + 5, { align: 'center' });
+    y += 7;
 
     doc.setFontSize(7);
-    doc.rect(10, y, 30, 6); doc.text("Data:", 12, y + 4.5); doc.text(new Date(contract.created_at).toLocaleDateString('pt-BR'), 22, y + 4.5);
-    doc.rect(40, y, 40, 6); doc.text("CPF:", 42, y + 4.5); doc.text(contract.data.cpf || '-', 50, y + 4.5);
-    doc.rect(80, y, 40, 6); doc.text("Nome:", 82, y + 4.5); doc.setFontSize(6); doc.text(String(contract.data.motorista || '-').substring(0, 22), 92, y + 4.5); doc.setFontSize(7);
-    doc.rect(120, y, 40, 6); doc.text("Carreta 1:", 122, y + 4.5); doc.text(contract.data.carreta || '-', 135, y + 4.5);
-    doc.rect(160, y, 40, 6); doc.text("Carreta 2:", 162, y + 4.5); doc.text(contract.data.carreta2 || '-', 175, y + 4.5);
+    doc.setFont("helvetica", "bold");
+    
+    // Row 1
+    doc.rect(10, y, 28, 6); doc.text("Data:", 11, y + 4); doc.setFont("helvetica", "normal"); doc.text(new Date(contract.created_at).toLocaleDateString('pt-BR'), 19, y + 4);
+    doc.rect(38, y, 38, 6); doc.setFont("helvetica", "bold"); doc.text("CPF:", 39, y + 4); doc.setFont("helvetica", "normal"); doc.text(contract.data.cpf || '-', 46, y + 4);
+    doc.rect(76, y, 44, 6); doc.setFont("helvetica", "bold"); doc.text("Nome:", 77, y + 4); doc.setFont("helvetica", "normal"); doc.setFontSize(6); doc.text(String(contract.data.motorista || '-').substring(0, 25), 86, y + 4); doc.setFontSize(7);
+    doc.rect(120, y, 40, 6); doc.setFont("helvetica", "bold"); doc.text("Carreta 1:", 121, y + 4); doc.setFont("helvetica", "normal"); doc.text(contract.data.carreta || '-', 134, y + 4);
+    doc.rect(160, y, 40, 6); doc.setFont("helvetica", "bold"); doc.text("Carreta 2:", 161, y + 4); doc.setFont("helvetica", "normal"); doc.text(contract.data.carreta2 || '-', 174, y + 4);
     y += 6;
 
-    doc.rect(10, y, 50, 6); doc.text("Transp:", 12, y + 4.5); doc.setFontSize(6); doc.text(String(contract.data.transportador || '-').substring(0, 25), 22, y + 4.5); doc.setFontSize(7);
-    doc.rect(60, y, 30, 6); doc.text("Cavalo:", 62, y + 4.5); doc.text(contract.data.cavalo || '-', 72, y + 4.5);
-    doc.rect(90, y, 30, 6); doc.text("Destino:", 92, y + 4.5); doc.setFontSize(6); doc.text(String(destino).substring(0, 18), 102, y + 4.5); doc.setFontSize(7);
-    doc.rect(120, y, 80, 12); 
-    doc.text("Assinatura:", 122, y + 4);
+    // Row 2
+    doc.rect(10, y, 45, 6); doc.setFont("helvetica", "bold"); doc.text("Transp:", 11, y + 4); doc.setFont("helvetica", "normal"); doc.setFontSize(6); doc.text(String(contract.data.transportador || '-').substring(0, 25), 21, y + 4); doc.setFontSize(7);
+    doc.rect(55, y, 35, 6); doc.setFont("helvetica", "bold"); doc.text("Cavalo:", 56, y + 4); doc.setFont("helvetica", "normal"); doc.text(contract.data.cavalo || '-', 66, y + 4);
+    doc.rect(90, y, 35, 6); doc.setFont("helvetica", "bold"); doc.text("Destino:", 91, y + 4); doc.setFont("helvetica", "normal"); doc.text(String(destino).substring(0, 15), 102, y + 4);
+    doc.rect(125, y, 75, 12); doc.setFont("helvetica", "bold"); doc.text("Assinatura:", 126, y + 4);
+    
+    // Row 3 (partial)
+    doc.rect(10, y + 6, 45, 6); doc.setFont("helvetica", "bold"); doc.text("Tecnologia:", 11, y + 10); doc.setFont("helvetica", "normal"); doc.text(String(contract.data.tecnologia || '-').substring(0, 15), 26, y + 10);
+    doc.rect(55, y + 6, 70, 6);
     
     if (contract.signature) {
       try {
@@ -1077,6 +1119,10 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
         console.error("Failed to add signature to Plano de Rota", e);
       }
     }
+    
+    y += 12;
+
+    return y + 10;
   };
 
   const downloadPDF = async (contract: Contract) => {
