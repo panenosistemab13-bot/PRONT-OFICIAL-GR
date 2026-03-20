@@ -233,9 +233,11 @@ export const AdminDashboard: React.FC = () => {
         estado_carreta: parts[29] || '',
         pendencia: parts[30] || '',
         check_list: parts[31] || '',
+        vinculo: parts[17] || '',
         valido: parts[33] || '',
         dias: parts[34] || '',
         carreta2: parts[35] || '',
+        uf_placas: parts[28] || '', // Usando estado_cavalo como UF padrão
       };
 
       // Passo 1: Criar o "Termo Padrão" no Código
@@ -682,34 +684,23 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     y += 6;
 
     doc.rect(10, y, 190, 6);
-    doc.text("MOTORISTA:", 12, y + 4.5);
-    doc.setFont("helvetica", "normal");
-    doc.text(contract.data.motorista || '-', 35, y + 4.5);
+    doc.setFont("helvetica", "bold");
+    doc.text(`MOTORISTA: ${contract.data.motorista || '-'}`, 12, y + 4.5);
     y += 6;
 
     doc.rect(10, y, 190, 6);
     doc.line(70, y, 70, y + 6);
     doc.line(130, y, 130, y + 6);
     doc.setFont("helvetica", "bold");
-    doc.text("CPF:", 12, y + 4.5);
-    doc.setFont("helvetica", "normal");
-    doc.text(contract.data.cpf || '-', 22, y + 4.5);
-    doc.setFont("helvetica", "bold");
-    doc.text("RG:", 72, y + 4.5);
-    doc.setFont("helvetica", "normal");
-    doc.text(contract.data.rg || '-', 80, y + 4.5);
-    doc.setFont("helvetica", "bold");
-    doc.text("CNH:", 132, y + 4.5);
-    doc.setFont("helvetica", "normal");
-    doc.text(contract.data.cnh || '-', 142, y + 4.5);
+    doc.text(`CPF: ${contract.data.cpf || '-'}`, 12, y + 4.5);
+    doc.text(`RG: ${contract.data.rg || '-'}`, 72, y + 4.5);
+    doc.text(`CNH: ${contract.data.cnh || '-'}`, 132, y + 4.5);
     y += 6;
 
     doc.rect(10, y, 190, 6);
     doc.line(130, y, 130, y + 6);
     doc.setFont("helvetica", "bold");
-    doc.text("VÍNCULO:", 12, y + 4.5);
-    doc.setFont("helvetica", "normal");
-    doc.text(contract.data.vinculo || '-', 30, y + 4.5);
+    doc.text(`VÍNCULO: ${contract.data.vinculo || '-'}`, 12, y + 4.5);
     y += 6;
 
     // Section 2: DADOS DO VEÍCULO
@@ -724,40 +715,35 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     doc.rect(10, y, 190, 6);
     doc.line(130, y, 130, y + 6);
     doc.setFont("helvetica", "bold");
-    doc.text("Transportadora:", 12, y + 4.5);
-    doc.setFont("helvetica", "normal");
-    doc.text(contract.data.transportador || '-', 35, y + 4.5);
-    doc.setFont("helvetica", "bold");
+    doc.text(`Transportadora: ${contract.data.transportador || '-'}`, 12, y + 4.5);
     doc.text("UF DAS PLACAS :", 132, y + 4.5);
-    doc.setFont("helvetica", "normal");
-    doc.text(contract.data.uf_placas || '-', 160, y + 4.5);
     y += 6;
 
     // Placa Cavalo Row
     doc.rect(10, y, 190, 6);
-    doc.line(100, y, 100, y + 6);
+    doc.line(130, y, 130, y + 6);
     doc.setFont("helvetica", "bold");
-    doc.text("Placa do Cavalo", 12, y + 4.5);
+    doc.text(`Placa do Cavalo: ${contract.data.cavalo || '-'}`, 12, y + 4.5);
     doc.setFont("helvetica", "normal");
-    doc.text(contract.data.cavalo || '-', 105, y + 4.5);
+    doc.text(contract.data.estado_cavalo || contract.data.uf_placas || '-', 160, y + 4.5);
     y += 6;
 
     // Placa Carreta 1 Row
     doc.rect(10, y, 190, 6);
-    doc.line(100, y, 100, y + 6);
+    doc.line(130, y, 130, y + 6);
     doc.setFont("helvetica", "bold");
-    doc.text("Placa Carreta 1", 12, y + 4.5);
+    doc.text(`Placa Carreta: 1 ${contract.data.carreta || '-'}`, 12, y + 4.5);
     doc.setFont("helvetica", "normal");
-    doc.text(contract.data.carreta || '-', 105, y + 4.5);
+    doc.text(contract.data.estado_carreta || contract.data.uf_placas || '-', 160, y + 4.5);
     y += 6;
 
     // Placa Carreta 2 Row
     doc.rect(10, y, 190, 6);
-    doc.line(100, y, 100, y + 6);
+    doc.line(130, y, 130, y + 6);
     doc.setFont("helvetica", "bold");
-    doc.text("Placa Carreta 2", 12, y + 4.5);
+    doc.text(`Placa Carreta: 2 ${contract.data.carreta2 || '-'}`, 12, y + 4.5);
     doc.setFont("helvetica", "normal");
-    doc.text(contract.data.carreta2 || '-', 105, y + 4.5);
+    doc.text(contract.data.uf_placas || '-', 160, y + 4.5);
     y += 6;
 
     // Vehicle Details Row
@@ -766,19 +752,11 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     doc.line(135, y, 135, y + 6);
     
     doc.setFont("helvetica", "bold");
-    doc.text("Tipo de Carreta:", 12, y + 4.5);
-    doc.setFont("helvetica", "normal");
-    doc.text(String(contract.data.modelo_carreta || contract.data.tipo_carreta || '-').substring(0, 22), 35, y + 4.5);
+    doc.text(`Tipo de Carreta: ${contract.data.modelo_carreta || contract.data.tipo_carreta || '-'}`, 12, y + 4.5);
     
-    doc.setFont("helvetica", "bold");
-    doc.text("Tipo de cavalo:", 77, y + 4.5);
-    doc.setFont("helvetica", "normal");
-    doc.text(String(contract.data.modelo_cavalo || contract.data.tipo_cavalo || '-').substring(0, 22), 100, y + 4.5);
+    doc.text(`Tipo de cavalo: ${contract.data.modelo_cavalo || contract.data.tipo_cavalo || '-'}`, 77, y + 4.5);
 
-    doc.setFont("helvetica", "bold");
-    doc.text("Tecnologia do veículo:", 137, y + 4.5);
-    doc.setFont("helvetica", "normal");
-    doc.text(String(contract.data.tecnologia || '-').substring(0, 22), 168, y + 4.5);
+    doc.text(`Tecnologia: ${contract.data.tecnologia || '-'}`, 137, y + 4.5);
     y += 6;
 
     // Section 3: ITENS A SEREM VISTORIADOS

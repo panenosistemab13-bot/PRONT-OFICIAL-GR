@@ -304,34 +304,34 @@ export const DriverSignature: React.FC = () => {
                 <table className="w-full border-collapse border-x border-b border-black text-[10px] text-black mt-[-1px]">
                   <tbody>
                     <tr>
-                      <td colSpan={6} className="bg-gray-300 border border-black p-1 text-center font-bold text-xs">
+                      <td colSpan={3} className="bg-gray-300 border border-black p-1 text-center font-bold text-xs">
                         DADOS DO MOTORISTA
                       </td>
                     </tr>
                     <tr>
-                      <td className="border border-black p-1 w-[15%] font-bold">MOTORISTA:</td>
-                      <td colSpan={5} className="border border-black p-1 text-center font-bold uppercase">
-                        {contract.data.motorista || '-'}
+                      <td colSpan={3} className="border border-black p-1">
+                        <span className="font-bold">MOTORISTA:</span>
+                        <span className="ml-4 uppercase">{contract.data.motorista || '-'}</span>
                       </td>
                     </tr>
                     <tr>
-                      <td className="border border-black p-1 w-[10%] font-bold">CPF:</td>
-                      <td className="border border-black p-1 w-[23%] text-center font-bold text-black">
-                        {contract.data.cpf || '-'}
+                      <td className="border border-black p-1 w-[33%]">
+                        <span className="font-bold">CPF:</span>
+                        <span className="ml-4">{contract.data.cpf || '-'}</span>
                       </td>
-                      <td className="border border-black p-1 w-[10%] font-bold">RG:</td>
-                      <td className="border border-black p-1 w-[23%] text-center font-bold">
-                        {contract.data.rg || '-'}
+                      <td className="border border-black p-1 w-[33%]">
+                        <span className="font-bold">RG:</span>
+                        <span className="ml-4 uppercase">{contract.data.rg || '-'}</span>
                       </td>
-                      <td className="border border-black p-1 w-[10%] font-bold">CNH:</td>
-                      <td className="border border-black p-1 w-[24%] text-center font-bold">
-                        {contract.data.cnh || '-'}
+                      <td className="border border-black p-1 w-[34%]">
+                        <span className="font-bold">CNH:</span>
+                        <span className="ml-4">{contract.data.cnh || '-'}</span>
                       </td>
                     </tr>
                     <tr>
-                      <td className="border border-black p-1 font-bold">VÍNCULO:</td>
-                      <td colSpan={5} className="border border-black p-1 text-center font-bold uppercase">
-                        FROTA
+                      <td colSpan={3} className="border border-black p-1">
+                        <span className="font-bold">VÍNCULO:</span>
+                        <span className="ml-4 uppercase">{contract.data.vinculo || '-'}</span>
                       </td>
                     </tr>
                   </tbody>
@@ -346,59 +346,45 @@ export const DriverSignature: React.FC = () => {
                       </td>
                     </tr>
                     <tr>
-                      <td className="border border-black p-1 w-[40%]">
-                        <span className="font-bold">Transportadora: </span>
-                        <span className="font-bold ml-10 uppercase">{contract.data.transportador || '-'}</span>
+                      <td className="border border-black p-1 w-[60%]">
+                        <span className="font-bold">Transportadora:</span>
+                        <span className="ml-4 uppercase">{contract.data.transportador || '-'}</span>
                       </td>
-                      <td colSpan={2} className="border border-black p-1 text-center font-bold">
-                        UF DAS PLACAS :
+                      <td colSpan={2} className="border border-black p-1">
+                        <span className="font-bold">UF DAS PLACAS :</span>
+                        <span className="ml-4 uppercase">{contract.data.uf_placas || '-'}</span>
                       </td>
                     </tr>
                     <tr>
                       <td className="border border-black p-1 font-bold">Placa do Cavalo</td>
-                      <td className="border border-black p-1 text-center font-bold uppercase">
+                      <td colSpan={2} className="border border-black p-1 text-center uppercase">
                         {contract.data.cavalo || '-'}
-                      </td>
-                      <td className="border border-black p-1 text-center font-bold uppercase">
-                        MG
                       </td>
                     </tr>
                     <tr>
                       <td className="border border-black p-1 font-bold">Placa Carreta 1</td>
-                      <td className="border border-black p-1 text-center font-bold uppercase">
+                      <td colSpan={2} className="border border-black p-1 text-center uppercase">
                         {contract.data.carreta || '-'}
-                      </td>
-                      <td className="border border-black p-1 text-center font-bold uppercase">
-                        MG
                       </td>
                     </tr>
                     <tr>
                       <td className="border border-black p-1 font-bold">Placa Carreta 2</td>
-                      <td className="border border-black p-1 text-center font-bold uppercase">
+                      <td colSpan={2} className="border border-black p-1 text-center uppercase">
                         {contract.data.carreta2 || '-'}
-                      </td>
-                      <td className="border border-black p-1 text-center font-bold uppercase">
-                        MG
                       </td>
                     </tr>
                     <tr>
                       <td className="border border-black p-1 w-1/3">
-                        <div className="font-bold">Tipo de Carreta:</div>
-                        <div className="text-red-600 font-bold text-center uppercase">
-                          {contract.data.modelo_carreta || contract.data.tipo_carreta || '-'}
-                        </div>
+                        <span className="font-bold">Tipo de Carreta:</span>
+                        <span className="ml-2 uppercase">{contract.data.modelo_carreta || contract.data.tipo_carreta || '-'}</span>
                       </td>
                       <td className="border border-black p-1 w-1/3">
-                        <div className="font-bold">Tipo de cavalo:</div>
-                        <div className="text-red-600 font-bold text-center uppercase">
-                          {contract.data.modelo_cavalo || contract.data.tipo_cavalo || '-'}
-                        </div>
+                        <span className="font-bold">Tipo de cavalo:</span>
+                        <span className="ml-2 uppercase">{contract.data.modelo_cavalo || contract.data.tipo_cavalo || '-'}</span>
                       </td>
                       <td className="border border-black p-1 w-1/3">
-                        <div className="font-bold">Tecnologia do veículo:</div>
-                        <div className="text-red-600 font-bold text-center uppercase">
-                          {contract.data.tecnologia || '-'}
-                        </div>
+                        <span className="font-bold">Tecnologia do veículo:</span>
+                        <span className="ml-2 uppercase">{contract.data.tecnologia || '-'}</span>
                       </td>
                     </tr>
                   </tbody>
