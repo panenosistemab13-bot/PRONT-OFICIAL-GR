@@ -85,6 +85,12 @@ const MAPA_REFERENCIA = {
   "NATAL - EUSEBIO": "NATAL_EUSEBIO.png",
   "SALVADOR - VIA CURVELO": "SALVADOR_CURVELO.png",
   "SALVADOR - VIA ANTONIO DIAS": "SALVADOR_ANTONIO_DIAS.png",
+  "SALVADOR/BA (VIA CURVELO)": "SALVADOR_CURVELO.png",
+  "SALVADOR/BA (VIA ANTONIO DIAS)": "SALVADOR_ANTONIO_DIAS.png",
+  "NATAL/RN (VIA MONTES CLAROS)": "NATAL_MONTES_CLAROS.png",
+  "NATAL/RN (VIA ANTONIO DIAS)": "NATAL_ANTONIO_DIAS.png",
+  "CURITIBA (DESTRO)": "CURITIBA.png",
+  "CURITIBA (CONDOR)": "CURITIBA.png",
   "XAXIM": "XAXIM.png",
   "PORTO VELHO": "PORTO VELHO.png",
   "BEBEDOURO": "BEBEDOURO.png",
@@ -254,7 +260,18 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
       
       // Identifica qual mapa usar com base no destino da planilha
       const destinoInfo = (parsedInfo.destino || "").toUpperCase();
-      const nomeArquivoMapa = Object.keys(MAPA_REFERENCIA).find(key => destinoInfo.includes(key));
+      let searchString = destinoInfo;
+      // Se tiver " X ", foca no que vem depois do X (o destino real)
+      if (destinoInfo.includes(" X ")) {
+        searchString = destinoInfo.split(" X ")[1] || destinoInfo;
+      } else if (destinoInfo.includes("|")) {
+        // Formato SANTA LUZIA|MG X PINHAIS
+        const parts = destinoInfo.split(" X ");
+        if (parts.length > 1) searchString = parts[1];
+      }
+
+      const sortedKeys = Object.keys(MAPA_REFERENCIA).sort((a, b) => b.length - a.length);
+      const nomeArquivoMapa = sortedKeys.find(key => searchString.includes(key));
       const mapaArquivo = nomeArquivoMapa ? MAPA_REFERENCIA[nomeArquivoMapa as keyof typeof MAPA_REFERENCIA] : "PADRAO.png";
       
       // Objeto com os dados que você colou da planilha
@@ -900,7 +917,7 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     }
   };
 
-  const generatePlanoDeTrajetoContent = (doc: jsPDF, contract: Contract) => {
+  const generatePlanoDeTrajetoContent = async (doc: jsPDF, contract: Contract) => {
     const pageWidth = doc.internal.pageSize.getWidth();
     let y = 15;
 
@@ -952,12 +969,40 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     doc.text(`Plano de Rota (${origem} x ${destino})`, pageWidth / 2, y + 4.5, { align: 'center' });
     y += 6;
 
-    // Map Placeholder & Itinerary Table
+    // Tentar carregar o mapa real
+    let mapLoaded = false;
+    if (contract.data.mapa_arquivo) {
+      try {
+        const { data: { publicUrl } } = supabase.storage.from('mapas-rotas').getPublicUrl(contract.data.mapa_arquivo);
+        
+        // Fetch image and convert to base64
+        const response = await fetch(publicUrl);
+        if (response.ok) {
+          const blob = await response.blob();
+          const base64 = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
+          
+          // Preencher todo o box (130x80) sem margens internas
+          doc.addImage(base64, 'PNG', 10, y, 130, 80);
+          mapLoaded = true;
+        }
+      } catch (e) {
+        console.error("Erro ao carregar mapa para o PDF:", e);
+      }
+    }
+
+    // Desenhar o box por cima (para manter a borda visível se houver imagem)
     doc.rect(10, y, 130, 80);
-    doc.setFontSize(10);
-    doc.text("MAPA DE TRAJETO", 75, y + 40, { align: 'center' });
-    doc.setFontSize(7);
-    doc.text("(Visualização do mapa indisponível)", 75, y + 45, { align: 'center' });
+
+    if (!mapLoaded) {
+      doc.setFontSize(10);
+      doc.text("MAPA DE TRAJETO", 75, y + 40, { align: 'center' });
+      doc.setFontSize(7);
+      doc.text("(Visualização do mapa indisponível)", 75, y + 45, { align: 'center' });
+    }
 
     // Itinerary Table (Right side)
     doc.rect(140, y, 60, 80);
@@ -1093,7 +1138,7 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
 
       // Page 2: Plano de Rota
       doc.addPage();
-      generatePlanoDeTrajetoContent(doc, contract);
+      await generatePlanoDeTrajetoContent(doc, contract);
 
       // Page 3: Checklist
       doc.addPage();

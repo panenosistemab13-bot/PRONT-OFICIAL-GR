@@ -15,6 +15,12 @@ const VisualizadorDeMapa = ({ destination, filename }: { destination: string; fi
     "NATAL - EUSEBIO": "NATAL_EUSEBIO.png",
     "SALVADOR - VIA CURVELO": "SALVADOR_CURVELO.png",
     "SALVADOR - VIA ANTONIO DIAS": "SALVADOR_ANTONIO_DIAS.png",
+    "SALVADOR/BA (VIA CURVELO)": "SALVADOR_CURVELO.png",
+    "SALVADOR/BA (VIA ANTONIO DIAS)": "SALVADOR_ANTONIO_DIAS.png",
+    "NATAL/RN (VIA MONTES CLAROS)": "NATAL_MONTES_CLAROS.png",
+    "NATAL/RN (VIA ANTONIO DIAS)": "NATAL_ANTONIO_DIAS.png",
+    "CURITIBA (DESTRO)": "CURITIBA.png",
+    "CURITIBA (CONDOR)": "CURITIBA.png",
     "XAXIM": "XAXIM.png",
     "PORTO VELHO": "PORTO VELHO.png",
     "BEBEDOURO": "BEBEDOURO.png",
@@ -48,7 +54,16 @@ const VisualizadorDeMapa = ({ destination, filename }: { destination: string; fi
 
   if (!nomeArquivo || nomeArquivo === "PADRAO.png") {
     const destinoInfo = (destination || "").toUpperCase();
-    const nomeChave = Object.keys(MAPA_REFERENCIA_LOCAL).find(key => destinoInfo.includes(key));
+    let searchString = destinoInfo;
+    if (destinoInfo.includes(" X ")) {
+      searchString = destinoInfo.split(" X ")[1] || destinoInfo;
+    } else if (destinoInfo.includes("|")) {
+      const parts = destinoInfo.split(" X ");
+      if (parts.length > 1) searchString = parts[1];
+    }
+
+    const sortedKeys = Object.keys(MAPA_REFERENCIA_LOCAL).sort((a, b) => b.length - a.length);
+    const nomeChave = sortedKeys.find(key => searchString.includes(key));
     nomeArquivo = nomeChave ? MAPA_REFERENCIA_LOCAL[nomeChave as keyof typeof MAPA_REFERENCIA_LOCAL] : "PADRAO.png";
   } else {
     // Se vier do AdminDashboard com .pdf, trocamos para .png para exibição direta
