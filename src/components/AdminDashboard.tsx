@@ -989,7 +989,7 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
         .single();
 
       if (!mapError && mapData?.image_data) {
-        doc.addImage(mapData.image_data, 'PNG', 11, y + 1, mapWidth - 2, sectionHeight - 2);
+        doc.addImage(mapData.image_data, 'PNG', 10, y, mapWidth, sectionHeight);
         mapLoaded = true;
       } else if (contract.data.mapa_arquivo) {
         const { data: { publicUrl } } = supabase.storage.from('mapas-rotas').getPublicUrl(contract.data.mapa_arquivo);
@@ -1001,7 +1001,7 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
             reader.onloadend = () => resolve(reader.result as string);
             reader.readAsDataURL(blob);
           });
-          doc.addImage(base64, 'PNG', 11, y + 1, mapWidth - 2, sectionHeight - 2);
+          doc.addImage(base64, 'PNG', 10, y, mapWidth, sectionHeight);
           mapLoaded = true;
         }
       }

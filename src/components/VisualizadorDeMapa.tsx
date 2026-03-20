@@ -132,16 +132,16 @@ const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({
         </h3>
       </div>
 
-      <div className="flex flex-col relative">
-        {/* Área do Mapa */}
-        <div className="w-full p-1 bg-white min-h-[350px] flex items-center justify-center relative overflow-hidden">
+      <div className="flex flex-col md:flex-row border-b-2 border-slate-800 min-h-[450px]">
+        {/* Área do Mapa (Esquerda) */}
+        <div className="flex-1 bg-white relative overflow-hidden border-b-2 md:border-b-0 md:border-r-2 border-slate-800">
           {loading ? (
-            <div className="flex flex-col items-center gap-2">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
               <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Carregando Mapa...</p>
             </div>
           ) : error || !mapImage ? (
-            <div className="p-8 text-center space-y-2">
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center space-y-2">
               <p className="text-xs text-slate-400 font-medium italic">Visualização do mapa indisponível</p>
               <p className="text-[9px] text-slate-300 uppercase tracking-wider font-bold">Destino: {destination}</p>
             </div>
@@ -150,13 +150,37 @@ const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({
               <img 
                 src={mapImage} 
                 alt={`Mapa para ${destination}`}
-                className="w-full h-auto block object-contain max-h-[800px] relative z-0"
+                className="w-full h-full block object-cover relative z-0"
                 referrerPolicy="no-referrer"
                 onError={handleImageError}
               />
               <WatermarkOverlay />
             </>
           )}
+        </div>
+
+        {/* Cidades do Itinerário (Direita) - Restaurada conforme solicitado */}
+        <div className="w-full md:w-72 bg-white flex flex-col">
+          <div className="bg-slate-100 p-2 border-b-2 border-slate-800 text-center">
+            <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-tighter">Cidades do Itinerário</h3>
+          </div>
+          <div className="flex-1 overflow-auto max-h-[300px] md:max-h-none">
+            <table className="w-full border-collapse text-[10px]">
+              <tbody>
+                {cities.length > 0 ? (
+                  cities.map((city, index) => (
+                    <tr key={index} className="border-b border-slate-200 last:border-0 hover:bg-slate-50">
+                      <td className="p-2 font-medium text-slate-700">{city}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td className="p-4 text-center text-slate-400 italic">Itinerário não disponível</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
