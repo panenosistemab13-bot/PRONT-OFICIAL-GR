@@ -134,6 +134,7 @@ export const AdminDashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'signed' | 'pending'>('all');
 
   const getChartData = () => {
     const last7Days = Array.from({ length: 7 }, (_, i) => {
@@ -426,7 +427,9 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
     doc.setFont("helvetica", "bold");
     doc.text("CPF:", col2, y);
     doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 255); // Blue for CPF
     doc.text(contract.data.cpf || '-', col2 + 10, y);
+    doc.setTextColor(0, 0, 0);
 
     doc.setFont("helvetica", "bold");
     doc.text("Transportadora:", col3, y);
@@ -482,7 +485,12 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
     doc.setFont("helvetica", "bold");
     doc.text("Tecnologia:", col1, y);
     doc.setFont("helvetica", "bold");
-    doc.text(contract.data.tecnologia || '-', col1 + 18, y);
+    const tecnologia = (contract.data.tecnologia || '-').toUpperCase();
+    if (tecnologia.includes('SASCAR')) {
+      doc.setTextColor(255, 0, 0); // Red for SASCAR
+    }
+    doc.text(tecnologia, col1 + 18, y);
+    doc.setTextColor(0, 0, 0);
 
     // Rules Section
     y += 8;    // Check if y is too close to bottom, add page if needed
@@ -676,7 +684,9 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     y += 16;
 
     // Section 1: DADOS DO MOTORISTA
-    doc.setFillColor(183, 183, 183); // Darker gray header
+    doc.setFillColor(224, 224, 224); // Gray header
+    doc.setDrawColor(0);
+    doc.setLineWidth(0.2);
     doc.rect(10, y, 190, 6, 'FD');
     doc.setFontSize(8);
     doc.setFont("helvetica", "bold");
@@ -692,7 +702,13 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     doc.line(70, y, 70, y + 6);
     doc.line(130, y, 130, y + 6);
     doc.setFont("helvetica", "bold");
-    doc.text(`CPF: ${contract.data.cpf || '-'}`, 12, y + 4.5);
+    
+    // CPF in BLUE
+    doc.text("CPF: ", 12, y + 4.5);
+    doc.setTextColor(0, 0, 255);
+    doc.text(`${contract.data.cpf || '-'}`, 21, y + 4.5);
+    doc.setTextColor(0, 0, 0);
+
     doc.text(`RG: ${contract.data.rg || '-'}`, 72, y + 4.5);
     doc.text(`CNH: ${contract.data.cnh || '-'}`, 132, y + 4.5);
     y += 6;
@@ -704,7 +720,7 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     y += 6;
 
     // Section 2: DADOS DO VEÍCULO
-    doc.setFillColor(183, 183, 183); // Darker gray header
+    doc.setFillColor(224, 224, 224); // Gray header
     doc.rect(10, y, 190, 6, 'FD');
     doc.setFontSize(8);
     doc.setFont("helvetica", "bold");
@@ -752,15 +768,37 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     doc.line(135, y, 135, y + 6);
     
     doc.setFont("helvetica", "bold");
-    doc.text(`Tipo de Carreta: ${contract.data.modelo_carreta || contract.data.tipo_carreta || '-'}`, 12, y + 4.5);
     
-    doc.text(`Tipo de cavalo: ${contract.data.modelo_cavalo || contract.data.tipo_cavalo || '-'}`, 77, y + 4.5);
+    // Check for RED terms in Tipo de Carreta
+    const tipoCarreta = (contract.data.modelo_carreta || contract.data.tipo_carreta || '-').toUpperCase();
+    doc.text(`Tipo de Carreta: `, 12, y + 4.5);
+    if (tipoCarreta.includes('RODOTREM BAÚ')) {
+      doc.setTextColor(255, 0, 0);
+    }
+    doc.text(tipoCarreta, 35, y + 4.5);
+    doc.setTextColor(0, 0, 0);
+    
+    // Check for RED terms in Tipo de cavalo
+    const tipoCavalo = (contract.data.modelo_cavalo || contract.data.tipo_cavalo || '-').toUpperCase();
+    doc.text(`Tipo de cavalo: `, 77, y + 4.5);
+    if (tipoCavalo.includes('TRUCADO')) {
+      doc.setTextColor(255, 0, 0);
+    }
+    doc.text(tipoCavalo, 100, y + 4.5);
+    doc.setTextColor(0, 0, 0);
 
-    doc.text(`Tecnologia: ${contract.data.tecnologia || '-'}`, 137, y + 4.5);
+    // Check for RED terms in Tecnologia
+    const tecnologia = (contract.data.tecnologia || '-').toUpperCase();
+    doc.text(`Tecnologia: `, 137, y + 4.5);
+    if (tecnologia.includes('SASCAR')) {
+      doc.setTextColor(255, 0, 0);
+    }
+    doc.text(tecnologia, 155, y + 4.5);
+    doc.setTextColor(0, 0, 0);
     y += 6;
 
     // Section 3: ITENS A SEREM VISTORIADOS
-    doc.setFillColor(183, 183, 183); // Darker gray header
+    doc.setFillColor(224, 224, 224); // Gray header
     doc.rect(10, y, 190, 6, 'FD');
     doc.setFontSize(8);
     doc.setFont("helvetica", "bold");
@@ -768,7 +806,7 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     y += 6;
 
     // Table Header
-    doc.setFillColor(183, 183, 183);
+    doc.setFillColor(224, 224, 224);
     doc.rect(10, y, 190, 6, 'FD');
     doc.line(20, y, 20, y + 6);
     doc.line(130, y, 130, y + 6);
@@ -850,7 +888,7 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     y += 18;
 
     // Approval Row
-    doc.setFillColor(204, 204, 204);
+    doc.setFillColor(224, 224, 224);
     doc.rect(10, y, 190, 6);
     doc.rect(10, y, 40, 6, 'F'); // Fill Veiculo Aprovado
     doc.rect(110, y, 20, 6, 'F'); // Fill OBS
@@ -880,15 +918,15 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     y += 6;
 
     // Footer & Signature
-    doc.rect(10, y, 190, 20);
+    doc.rect(10, y, 190, 25);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.text("ASSINATURA DO MOTORISTA:", 15, y + 12);
     
     if (contract.signature) {
       try {
-        // Compact and centered signature
-        doc.addImage(contract.signature, 'PNG', 100, y + 2, 45, 15);
+        // Centered signature
+        doc.addImage(contract.signature, 'PNG', 80, y + 2, 60, 20);
       } catch (e) {
         console.error("Failed to add signature to PDF", e);
       }
@@ -1173,13 +1211,21 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     { name: 'Pendentes', value: contracts.filter(c => !c.signature).length, color: '#f59e0b' },
   ];
 
-  const filteredContracts = contracts.filter(c => 
-    c.data.motorista?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.data.cpf?.includes(searchTerm) ||
-    c.data.cavalo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.data.carreta?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.id.includes(searchTerm)
-  );
+  const filteredContracts = contracts.filter(c => {
+    const matchesSearch = 
+      c.data.motorista?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.data.cpf?.includes(searchTerm) ||
+      c.data.cavalo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.data.carreta?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.id.includes(searchTerm);
+    
+    const matchesStatus = 
+      statusFilter === 'all' ||
+      (statusFilter === 'signed' && c.signature) ||
+      (statusFilter === 'pending' && !c.signature);
+      
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-indigo-500/30">
@@ -1565,7 +1611,9 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
                       <div className="relative z-10 flex flex-col h-full">
                         <div>
                           <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2">Criador e Idealizador</p>
-                          <h3 className="text-2xl font-bold text-white mb-2">Jefferson Augusto</h3>
+                          <h3 className="text-2xl font-bold text-white mb-1">Jefferson Augusto</h3>
+                          <p className="text-xs text-slate-400 font-medium">Unidade - Santa Luzia</p>
+                          <p className="text-xs text-slate-400 font-medium italic">Agente de Risco</p>
                         </div>
                         
                         <div className="flex-1 flex flex-col items-start justify-end mt-8">
@@ -1584,7 +1632,7 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
                         </div>
                         <div>
                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Data de Lançamento</p>
-                          <p className="font-bold text-slate-700">13 de Março, 2026</p>
+                          <p className="font-bold text-slate-700">26 de Março, 2026</p>
                         </div>
                       </div>
                       <div className="w-12 h-12 rounded-full border-4 border-indigo-50 flex items-center justify-center">
@@ -1605,12 +1653,20 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {[
-                    { label: 'Total de Termos', value: contracts.length, icon: FileText, color: 'indigo' },
-                    { label: 'Assinados', value: contracts.filter(c => c.signature).length, icon: CheckCircle2, color: 'emerald' },
-                    { label: 'Pendentes', value: contracts.filter(c => !c.signature).length, icon: Clock, color: 'amber' },
-                    { label: 'Taxa de Sucesso', value: `${contracts.length ? Math.round((contracts.filter(c => c.signature).length / contracts.length) * 100) : 0}%`, icon: ShieldCheck, color: 'indigo' },
+                    { label: 'Total de Termos', value: contracts.length, icon: FileText, color: 'indigo', filter: 'all' },
+                    { label: 'Assinados', value: contracts.filter(c => c.signature).length, icon: CheckCircle2, color: 'emerald', filter: 'signed' },
+                    { label: 'Pendentes', value: contracts.filter(c => !c.signature).length, icon: Clock, color: 'amber', filter: 'pending' },
+                    { label: 'Taxa de Sucesso', value: `${contracts.length ? Math.round((contracts.filter(c => c.signature).length / contracts.length) * 100) : 0}%`, icon: ShieldCheck, color: 'indigo', filter: 'all' },
                   ].map((stat, i) => (
-                    <div key={i} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex items-center gap-4">
+                    <button 
+                      key={i} 
+                      onClick={() => setStatusFilter(stat.filter as any)}
+                      className={`bg-white rounded-2xl p-6 shadow-sm border text-left flex items-center gap-4 transition-all ${
+                        statusFilter === stat.filter 
+                          ? 'border-indigo-500 ring-2 ring-indigo-500/10' 
+                          : 'border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
                       <div className={`p-3 bg-${stat.color}-50 rounded-xl`}>
                         <stat.icon className={`w-6 h-6 text-${stat.color}-600`} />
                       </div>
@@ -1618,7 +1674,7 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{stat.label}</p>
                         <p className="text-2xl font-black text-slate-900">{stat.value}</p>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
 
@@ -1724,8 +1780,13 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
                                       </button>
                                       <button 
                                         onClick={() => downloadPDF(contract)}
-                                        className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
-                                        title="Baixar PDF Duplo"
+                                        disabled={!contract.signature}
+                                        className={`p-2 transition-all rounded-lg ${
+                                          !contract.signature 
+                                            ? 'text-slate-200 cursor-not-allowed' 
+                                            : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'
+                                        }`}
+                                        title={!contract.signature ? "Aguardando assinatura" : "Baixar PDF Duplo"}
                                       >
                                         <Download className="w-4 h-4" />
                                       </button>

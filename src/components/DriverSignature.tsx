@@ -13,13 +13,14 @@ import {
   User, 
   ClipboardCheck,
   Info,
-  Lock
+  Lock,
+  MapPin
 } from 'lucide-react';
-import { LOGO_3_CORACOES } from '../constants';
 import { SignaturePad } from './SignaturePad';
 import { Contract } from '../types';
 import { supabase } from '../services/supabase';
 import VisualizadorDeMapa from './VisualizadorDeMapa';
+import { LOGO_3_CORACOES } from '../constants';
 
 const CHECKLIST_ITEMS = [
   "O VEÍCULO APRESENTA-SE LIMPO E EM BOAS CONDIÇÕES DE ACESSO AO DEPÓSITO.",
@@ -58,8 +59,9 @@ export const DriverSignature: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [signed, setSigned] = useState(false);
-  const [step, setStep] = useState(1); // 1: Checklist, 2: Termo, 3: Assinatura
+  const [step, setStep] = useState(1); // 1: Termo, 2: Plano de Rota, 3: Checklist + Assinatura
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
+  const [signatureData, setSignatureData] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchContract = async () => {
@@ -67,16 +69,14 @@ export const DriverSignature: React.FC = () => {
       
       try {
         const { data, error } = await supabase
-          .from('contracts') // Nome exato
+          .from('contracts')
           .select('*')
           .eq('id', id)
           .single();
 
         if (error) throw error;
 
-        // Verifica se achou os dados e se a coluna 'dados' existe
         if (data && data.dados) {
-          // Adaptamos para o formato que o componente espera
           setContract({
             id: data.id,
             data: typeof data.dados === 'string' ? JSON.parse(data.dados) : data.dados,
@@ -85,9 +85,12 @@ export const DriverSignature: React.FC = () => {
             created_at: data.created_at,
             onbase_status: data.onbase_status
           }); 
-          if (data.signature) setSigned(true);
+          if (data.signature) {
+            setSigned(true);
+            setSignatureData(data.signature);
+          }
         } else {
-          setError('Link inválido ou expirado.'); // Link inválido se não tiver a coluna
+          setError('Link inválido ou expirado.');
         }
       } catch (error) {
         console.error("Erro ao carregar link:", error);
@@ -110,12 +113,21 @@ export const DriverSignature: React.FC = () => {
   const [saving, setSaving] = useState(false);
 
   const handleSign = async (signature: string) => {
+    setSignatureData(signature);
+  };
+
+  const handleFinalize = async () => {
+    if (!signatureData) {
+      alert('Por favor, assine o documento antes de finalizar.');
+      return;
+    }
+
     setSaving(true);
     try {
       const { error } = await supabase
         .from('contracts')
         .update({ 
-          signature, 
+          signature: signatureData, 
           signed_at: new Date().toISOString() 
         })
         .eq('id', id);
@@ -226,7 +238,7 @@ export const DriverSignature: React.FC = () => {
           <div className="text-right">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Etapa Atual</span>
             <span className="text-xs font-bold text-slate-700">
-              {step === 1 ? 'Checklist' : step === 2 ? 'Termo GR' : 'Assinatura'}
+              {step === 1 ? 'Termo GR' : step === 2 ? 'Plano de Rota' : 'Checklist'}
             </span>
           </div>
         </header>
@@ -259,229 +271,18 @@ export const DriverSignature: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="bg-white p-4 overflow-hidden"
-            >
-              <div className="w-full overflow-x-auto font-['Arial',_sans-serif]">
-                {/* Header Table */}
-                <table className="w-full border-collapse border border-black text-[10px] text-black">
-                  <tbody>
-                    <tr>
-                      <td rowSpan={3} className="border border-black p-2 w-[20%] text-center align-middle">
-                        <img src={LOGO_3_CORACOES} alt="3 Corações" className="h-12 mx-auto object-contain" />
-                      </td>
-                      <td rowSpan={3} className="border border-black p-1 text-center w-[55%] align-middle">
-                        <div className="font-bold text-xs">CHECK-LIST PRESENCIAL VEICULAR</div>
-                        <div className="font-bold text-xs">3 CORAÇÕES</div>
-                        <div className="font-bold text-[10px]">GERENCIAMENTO DE RISCOS E SEGUROS</div>
-                      </td>
-                      <td className="border border-black p-1 w-[25%] text-[9px] font-bold">
-                        <div className="flex justify-between">
-                          <span>IMPLANTAÇÃO:</span>
-                          <span>23/09/2015</span>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-black p-1 text-[9px] font-bold">
-                        <div className="flex justify-between">
-                          <span>ATUALIZAÇÃO:</span>
-                          <span>01/01/2025</span>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-black p-0 text-[9px] font-bold">
-                        <div className="flex h-full">
-                          <div className="flex-1 border-r border-black p-1">VERSÃO 8.1</div>
-                          <div className="w-12 p-1 text-center">STL</div>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                {/* DADOS DO MOTORISTA Section */}
-                <table className="w-full border-collapse border-x border-b border-black text-[10px] text-black mt-[-1px]">
-                  <tbody>
-                    <tr>
-                      <td colSpan={3} className="bg-gray-300 border border-black p-1 text-center font-bold text-xs">
-                        DADOS DO MOTORISTA
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colSpan={3} className="border border-black p-1">
-                        <span className="font-bold">MOTORISTA:</span>
-                        <span className="ml-4 uppercase">{contract.data.motorista || '-'}</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-black p-1 w-[33%]">
-                        <span className="font-bold">CPF:</span>
-                        <span className="ml-4">{contract.data.cpf || '-'}</span>
-                      </td>
-                      <td className="border border-black p-1 w-[33%]">
-                        <span className="font-bold">RG:</span>
-                        <span className="ml-4 uppercase">{contract.data.rg || '-'}</span>
-                      </td>
-                      <td className="border border-black p-1 w-[34%]">
-                        <span className="font-bold">CNH:</span>
-                        <span className="ml-4">{contract.data.cnh || '-'}</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colSpan={3} className="border border-black p-1">
-                        <span className="font-bold">VÍNCULO:</span>
-                        <span className="ml-4 uppercase">{contract.data.vinculo || '-'}</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                {/* DADOS DO VEÍCULO Section */}
-                <table className="w-full border-collapse border-x border-b border-black text-[10px] text-black mt-[-1px]">
-                  <tbody>
-                    <tr>
-                      <td colSpan={3} className="bg-gray-300 border border-black p-1 text-center font-bold text-xs">
-                        DADOS DO VEÍCULO
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-black p-1 w-[60%]">
-                        <span className="font-bold">Transportadora:</span>
-                        <span className="ml-4 uppercase">{contract.data.transportador || '-'}</span>
-                      </td>
-                      <td colSpan={2} className="border border-black p-1">
-                        <span className="font-bold">UF DAS PLACAS :</span>
-                        <span className="ml-4 uppercase">{contract.data.uf_placas || '-'}</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-black p-1 font-bold">Placa do Cavalo</td>
-                      <td colSpan={2} className="border border-black p-1 text-center uppercase">
-                        {contract.data.cavalo || '-'}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-black p-1 font-bold">Placa Carreta 1</td>
-                      <td colSpan={2} className="border border-black p-1 text-center uppercase">
-                        {contract.data.carreta || '-'}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-black p-1 font-bold">Placa Carreta 2</td>
-                      <td colSpan={2} className="border border-black p-1 text-center uppercase">
-                        {contract.data.carreta2 || '-'}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-black p-1 w-1/3">
-                        <span className="font-bold">Tipo de Carreta:</span>
-                        <span className="ml-2 uppercase">{contract.data.modelo_carreta || contract.data.tipo_carreta || '-'}</span>
-                      </td>
-                      <td className="border border-black p-1 w-1/3">
-                        <span className="font-bold">Tipo de cavalo:</span>
-                        <span className="ml-2 uppercase">{contract.data.modelo_cavalo || contract.data.tipo_cavalo || '-'}</span>
-                      </td>
-                      <td className="border border-black p-1 w-1/3">
-                        <span className="font-bold">Tecnologia do veículo:</span>
-                        <span className="ml-2 uppercase">{contract.data.tecnologia || '-'}</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                {/* ITENS A SEREM VISTORIADOS Section */}
-                <table className="w-full border-collapse border-x border-b border-black text-[9px] mt-[-1px]">
-                  <tbody>
-                    <tr>
-                      <td colSpan={5} className="bg-gray-300 border border-black p-1 text-center font-bold text-xs">
-                        ITENS A SEREM VISTORIADOS - SEGURANÇA PATRIMONIAL
-                      </td>
-                    </tr>
-                    <tr className="bg-gray-200 font-bold text-center">
-                      <td className="border border-black p-1 w-[5%]">ITEM</td>
-                      <td className="border border-black p-1 w-[65%]">DESCRIÇÃO</td>
-                      <td className="border border-black p-1 w-[5%]">CONF</td>
-                      <td className="border border-black p-1 w-[5%]">ÑCON</td>
-                      <td className="border border-black p-1 w-[20%]">OBSERVAÇÕES</td>
-                    </tr>
-                    {CHECKLIST_ITEMS.map((item, idx) => (
-                      <tr key={idx}>
-                        <td className="border border-black p-1 text-center">{(idx + 1).toString().padStart(2, '0')}</td>
-                        <td className="border border-black p-1 leading-tight">{item}</td>
-                        <td className="border border-black p-1 text-center font-mono font-bold">[X]</td>
-                        <td className="border border-black p-1 text-center font-mono">[ ]</td>
-                        <td className="border border-black p-1 text-[7px] italic">
-                          {(idx === 16 || idx === 17) ? "ok, não se aplica a baú ou câmara fria" : ""}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
-                {/* Equipamentos de Segurança Section */}
-                <div className="border-x border-b border-black p-2 mt-[-1px]">
-                  <div className="grid grid-cols-3 gap-y-1 text-[9px] font-bold">
-                    {[
-                      "Posicionamento", "Trava de Baú", "Sensores Porta Motorista",
-                      "Cabo de Engate", "Sirene", "Sensores Porta Carona",
-                      "Sistema de Bloqueio", "Teclado", "Sensores de Baú"
-                    ].map((item, idx) => (
-                      <div key={idx} className="flex items-center gap-1">
-                        <span className="font-mono">[X]</span>
-                        <span>{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-black">
-                    <div className="flex items-center gap-4">
-                      <span className="font-bold text-[10px]">Veículo Aprovado</span>
-                      <span className="font-mono font-bold text-[10px]">[X] SIM</span>
-                      <span className="font-mono text-[10px]">[ ] NÃO</span>
-                    </div>
-                    <div className="flex-1 ml-4 flex items-center gap-2">
-                      <span className="font-bold text-[10px]">OBS:</span>
-                      <div className="flex-1 border-b border-black h-4"></div>
-                      <div className="text-[8px] text-red-600 font-bold">
-                        {new Date().toLocaleDateString('pt-BR')} {new Date().toLocaleTimeString('pt-BR')}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Signature Section */}
-                <div className="border-x border-b border-black p-4 mt-[-1px] h-24 flex flex-col justify-between">
-                  <div className="font-bold text-[10px]">ASSINATURA DO MOTORISTA:</div>
-                  <div className="w-1/2 border-t border-black mt-8"></div>
-                </div>
-              </div>
-
-              <div className="p-8 flex justify-end">
-                <button
-                  onClick={() => setStep(2)}
-                  className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all"
-                >
-                  Confirmar e Prosseguir <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {step === 2 && (
-            <motion.div
-              key="step2"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
               className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 md:p-12 space-y-10"
             >
               <div className="flex flex-col items-center text-center space-y-4 border-b border-slate-100 pb-8">
-                <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center">
-                  <FileText className="w-8 h-8 text-indigo-600" />
-                </div>
+                <img 
+                  src={LOGO_3_CORACOES} 
+                  alt="3corações" 
+                  className="h-16 object-contain mb-2"
+                  referrerPolicy="no-referrer"
+                />
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900">Termo de Responsabilidade GR</h2>
-                  <p className="text-slate-400 text-sm font-medium">Leia atentamente as normas de Gerenciamento de Risco</p>
+                  <h2 className="text-2xl font-bold text-slate-900 uppercase tracking-tight">TERMO DE RESPONSABILIDADE GR</h2>
+                  <p className="text-slate-400 text-sm font-medium">Normas de Gerenciamento de Risco - Três Corações Alimentos S.A.</p>
                 </div>
               </div>
 
@@ -513,100 +314,186 @@ export const DriverSignature: React.FC = () => {
                 </div>
 
                 <div className="mt-8 space-y-4">
-                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">Normas de Gerenciamento de Risco</h4>
-                  <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 text-xs text-slate-600 leading-relaxed">
-                    <p>• Ao informar início de viagem, deverá aguardar a mensagem <strong>“Ok, Liberado”</strong> que será enviada pela Central de Monitoramento 3corações, autorizando o prosseguimento da viagem;</p>
-                    <p>• Informar todas as paradas e reinícios durante a viagem;</p>
-                    <p>• Ao chegar no local de descarga, enviar macro <strong>“CHEGADA NO CLIENTE”</strong>, e enviando a macro de <strong>“FIM DE VIAGEM”</strong>, somente quando a descarga for finalizada;</p>
-                    <p>• <strong>É proibido parar antes dos 150 km iniciais</strong>, exceto paradas obrigatórias ou problema mecânico/elétrico;</p>
-                    <p>• <strong>É proibido pernoite em residência;</strong></p>
-                    <p>• Respeitar o horário de rodagem, no período de <strong>05h00min às 22h00min</strong>;</p>
-                    <p>• O veículo será desbloqueado após o pernoite, somente mediante confirmação de senha de segurança do motorista, via teclado;</p>
-                    <p>• Evitar pernoite sob cobertura, evitando perda de sinal da antena;</p>
-                    <p>• <strong>Não conceder carona;</strong></p>
-                    <p>• Seguir o trajeto predeterminado;</p>
-                    <p>• Respeitar o limite de velocidade da via, não excedendo o limite de <strong>80km/h</strong>;</p>
-                    <p>• Manter a central informada de todas as anormalidades durante o percurso, mantendo a comunicação, via macro, como também pelos telefones: <strong>Fixo (85) 4006.5522 (escolher a opção desejada); WhatsApp (85) 99198.2886 (apenas mensagem e áudio);</strong></p>
-                    <p>• Dirigir preventivamente, evitando acidentes, preservando sua própria vida, a vida de terceiros e também carga do embarcador;</p>
-                    <p>• Não oferecer, dar ou aceitar de quem quer que seja, tanto por conta própria ou através de terceiro, qualquer pagamento, doação, compensação, vantagens ou benefícios de qualquer natureza que constituam prática ilegal ou prática de corrupção sob as leis de qualquer país;</p>
-                    <p>• <strong>(Proibido passagem por Sergipe);</strong></p>
-                    <p>• Destino Rio de Janeiro: Agendar escolta com 2 horas de antecedência do ponto de encontro, no pedágio desativado em Duque de Caxias/RJ, evitar rodar depois das 17 horas dentro da área urbana da cidade. Caso necessário, o pernoite acontecerá mais cedo na cidade de Três Rios/RJ (Posto Ipirangão);</p>
-                    <p>• Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e Frango Assado;</p>
-                    <p className="font-bold text-slate-900 mt-4">Caso tenha dúvidas, contate nossa central de monitoramento pelos telefones acima informados.</p>
+                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">Dados da Viagem</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Data</p>
+                      <p className="text-sm font-bold text-slate-700">{new Date(contract.created_at).toLocaleDateString('pt-BR')}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">CPF</p>
+                      <p className="text-sm font-bold text-blue-600">{contract.data.cpf || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Vínculo</p>
+                      <p className="text-sm font-bold text-slate-700">{contract.data.vinculo || 'FROTA'}</p>
+                    </div>
+                    <div className="md:col-span-3">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Motorista</p>
+                      <p className="text-sm font-bold text-slate-700">{contract.data.motorista || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Placa Cavalo</p>
+                      <p className="text-sm font-bold text-slate-700">{contract.data.cavalo || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Carreta I</p>
+                      <p className="text-sm font-bold text-slate-700">{contract.data.carreta || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Carreta II</p>
+                      <p className="text-sm font-bold text-slate-700">{contract.data.carreta2 || '-'}</p>
+                    </div>
+                    <div className="md:col-span-2">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Tecnologia</p>
+                      <p className={`text-sm font-bold ${(contract.data.tecnologia || '').toUpperCase().includes('SASCAR') ? 'text-red-600' : 'text-slate-700'}`}>
+                        {contract.data.tecnologia || '-'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">UF</p>
+                      <p className="text-sm font-bold text-slate-700">{contract.data.uf_placas || 'MG'}</p>
+                    </div>
+                    </div>
                   </div>
                 </div>
 
                 <div className="mt-8 space-y-4">
-                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">Plano de Rota</h4>
-                  <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 text-xs text-slate-600 leading-relaxed">
-                    <p className="font-bold text-slate-900">Orientações sobre o PLANO DE ROTA</p>
-                    <p>a. É proibida parada nos primeiros 150 km iniciais, exceto problema mecânico/elétrico;</p>
-                    <p>b. Respeitar o horário de rodagem, no período de 05h00min às 22h00min para produto acabado e 05h00min às 19h00min para o transporte de grãos;</p>
-                    <p>c. Qualquer desvio de trajeto sem prévia autorização é uma falta grave, e poderá ser levada em consideração para futuros carregamentos com a carga da 3corações.</p>
+                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">Regras de Ouro (21 Itens)</h4>
+                  <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 text-[11px] text-slate-600 leading-relaxed">
+                    <p>1. Ao informar início de viagem, deverá aguardar a mensagem <strong>“Ok, Liberado”</strong> que será enviada pela Central de Monitoramento 3corações, autorizando o prosseguimento da viagem;</p>
+                    <p>2. Informar todas as paradas e reinícios durante a viagem;</p>
+                    <p>3. Ao chegar no local de descarga, enviar macro <strong>“CHEGADA NO CLIENTE”</strong>, e enviando a macro de <strong>“FIM DE VIAGEM”</strong>, somente quando a descarga for finalizada;</p>
+                    <p>4. <strong>É proibido parar antes dos 150 km iniciais</strong>, exceto paradas obrigatórias ou problema mecânico/elétrico;</p>
+                    <p>5. <strong>É proibido pernoite em residência;</strong></p>
+                    <p>6. Respeitar o horário de rodagem, no período de <strong>05h00min às 22h00min</strong>;</p>
+                    <p>7. O veículo será desbloqueado após o pernoite, somente mediante confirmação de senha de segurança do motorista, via teclado;</p>
+                    <p>8. Evitar pernoite sob cobertura, evitando perda de sinal da antena;</p>
+                    <p>9. <strong>Não conceder carona;</strong></p>
+                    <p>10. Seguir o trajeto predeterminado;</p>
+                    <p>11. Respeitar o limite de velocidade da via, não excedendo o limite de <strong>80km/h</strong>;</p>
+                    <p>12. Manter a central informada de todas as anormalidades durante o percurso, mantendo a comunicação, via macro, como também pelos telefones: <strong>Fixo (85) 4006.5522 (escolher a opção desejada); WhatsApp (85) 99198.2886 (apenas mensagem e áudio);</strong></p>
+                    <p>13. Dirigir preventivamente, evitando acidentes, preservando sua própria vida, a vida de terceiros e também carga do embarcador;</p>
+                    <p>14. Não oferecer, dar ou aceitar de quem quer que seja, tanto por conta própria ou através de terceiro, qualquer pagamento, doação, compensação, vantagens ou benefícios de qualquer natureza que constituam prática ilegal ou prática de corrupção sob as leis de qualquer país;</p>
+                    <p>15. <strong>(Proibido passagem por Sergipe);</strong></p>
+                    <p>16. Destino Rio de Janeiro: Agendar escolta com 2 horas de antecedência do ponto de encontro, no pedágio desativado em Duque de Caxias/RJ, evitar rodar depois das 17 horas dentro da área urbana da cidade. Caso necessário, o pernoite acontecerá mais cedo na cidade de Três Rios/RJ (Posto Ipirangão);</p>
+                    <p>17. Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e Frango Assado;</p>
+                    <p>18. Manter o veículo travado e com os vidros fechados durante todo o percurso;</p>
+                    <p>19. Não realizar paradas em locais não autorizados ou sem infraestrutura de segurança;</p>
+                    <p>20. Em caso de suspeita de acompanhamento, acionar imediatamente o botão de pânico;</p>
+                    <p>21. Realizar o teste de teclado/comunicação antes de iniciar a viagem.</p>
+                    <p className="font-bold text-slate-900 mt-4">Caso tenha dúvidas, contate nossa central de monitoramento pelos telefones acima informados.</p>
                   </div>
-                  <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 space-y-4">
-                    <div className="flex items-center justify-between border-b border-indigo-100 pb-3">
-                      <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Origem</span>
-                      <span className="text-sm font-bold text-indigo-900">{contract.data.origem || 'Santa Luzia/MG'}</span>
+                </div>
+
+              <div className="flex justify-end pt-6">
+                <button
+                  onClick={() => setStep(2)}
+                  className="bg-indigo-600 text-white px-10 py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all"
+                >
+                  Confirmar e Prosseguir <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {step === 2 && (
+            <motion.div
+              key="step2"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 md:p-12 space-y-10"
+            >
+              <div className="flex flex-col items-center text-center space-y-4 border-b border-slate-100 pb-8">
+                <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center">
+                  <Truck className="w-8 h-8 text-indigo-600" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900">Plano de Rota GR</h2>
+                  <p className="text-slate-400 text-sm font-medium">Visualize o trajeto e locais de parada</p>
+                </div>
+              </div>
+
+              <div className="space-y-8">
+                <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 space-y-4">
+                  <div className="flex items-center justify-between border-b border-indigo-100 pb-3">
+                    <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Origem</span>
+                    <span className="text-sm font-bold text-indigo-900">{contract.data.origem || 'Santa Luzia/MG'}</span>
+                  </div>
+                  <div className="flex items-center justify-center py-2">
+                    <div className="w-8 h-8 rounded-full bg-white border-2 border-indigo-200 flex items-center justify-center text-indigo-400 font-bold">X</div>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-indigo-100 pt-3">
+                    <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Destino</span>
+                    <span className="text-sm font-bold text-indigo-900">{contract.data.destino || 'Gov. Celso Ramos/SC'}</span>
+                  </div>
+                  
+                  <div className="mt-6 space-y-4">
+                    <div className="flex items-center gap-2 border-b border-indigo-100 pb-2">
+                      <MapPin className="w-4 h-4 text-indigo-500" />
+                      <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-widest">Cidades do Itinerário</h4>
                     </div>
-                    <div className="flex items-center justify-center py-2">
-                      <div className="w-8 h-8 rounded-full bg-white border-2 border-indigo-200 flex items-center justify-center text-indigo-400 font-bold">X</div>
+                    <div className="bg-white border border-indigo-100 rounded-xl p-4">
+                      <p className="text-xs text-slate-600 leading-relaxed italic">
+                        {contract.data.trajeto || 'Santa Luzia, Carmópolis de Minas, Pouso Alegre, Cambuí, Extrema, Atibaia, Campinas, Sumaré.'}
+                      </p>
                     </div>
-                    <div className="flex items-center justify-between border-t border-indigo-100 pt-3">
-                      <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Destino</span>
-                      <span className="text-sm font-bold text-indigo-900">{contract.data.destino || 'Gov. Celso Ramos/SC'}</span>
+                  </div>
+
+                  <div className="mt-6 space-y-4">
+                    <div className="flex items-center gap-2 border-b border-indigo-100 pb-2">
+                      <Truck className="w-4 h-4 text-indigo-500" />
+                      <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-widest">Mapa do Trajeto</h4>
                     </div>
                     
-                    <div className="mt-6 space-y-4">
-                      <div className="flex items-center gap-2 border-b border-indigo-100 pb-2">
-                        <Truck className="w-4 h-4 text-indigo-500" />
-                        <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-widest">Plano de Rota</h4>
+                    {contract.data.destino ? (
+                      <VisualizadorDeMapa 
+                        destination={contract.data.destino} 
+                        itinerary={contract.data.trajeto} 
+                        mapa_arquivo={contract.data.mapa_arquivo}
+                        driverName={contract.data.motorista}
+                        driverCpf={contract.data.cpf}
+                        showWatermark={true}
+                      />
+                    ) : (
+                      <div className="p-6 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-center justify-center">
+                        <AlertCircle className="w-5 h-5 text-red-500" />
+                        <p className="text-xs font-bold text-red-700">Destino não informado para carregar o mapa.</p>
                       </div>
-                      
-                      {contract.data.destino ? (
-                        <VisualizadorDeMapa 
-                          destination={contract.data.destino} 
-                          itinerary={contract.data.trajeto} 
-                          mapa_arquivo={contract.data.mapa_arquivo}
-                          driverName={contract.data.motorista}
-                          driverCpf={contract.data.cpf}
-                          showWatermark={true}
-                        />
-                      ) : (
-                        <div className="p-6 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-center justify-center">
-                          <AlertCircle className="w-5 h-5 text-red-500" />
-                          <p className="text-xs font-bold text-red-700">Destino não informado para carregar o mapa.</p>
-                        </div>
-                      )}
-                    </div>
+                    )}
+                  </div>
 
-                    <div className="mt-8 space-y-3">
-                      <div className="flex items-center gap-2 border-b border-red-100 pb-2">
-                        <AlertCircle className="w-4 h-4 text-red-500" />
-                        <h4 className="text-xs font-bold text-red-900 uppercase tracking-widest">Paradas Proibidas</h4>
+                  <div className="mt-8 space-y-3">
+                    <div className="flex items-center gap-2 border-b border-red-100 pb-2">
+                      <AlertCircle className="w-4 h-4 text-red-500" />
+                      <h4 className="text-xs font-bold text-red-900 uppercase tracking-widest">Paradas Proibidas</h4>
+                    </div>
+                    <div className="bg-red-50 border border-red-100 rounded-2xl p-6">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-[10px] text-red-700 font-bold uppercase tracking-tight">
+                        <div>• Cambuí/MG</div>
+                        <div>• Campanha/MG</div>
+                        <div>• Embu das Artes/SP</div>
+                        <div>• Itatiaiuçu/MG</div>
+                        <div>• Carmópolis de Minas/MG</div>
+                        <div>• Guarulhos/SP</div>
+                        <div>• Itaguara/MG</div>
+                        <div>• Igarapé/MG</div>
+                        <div>• Itapecerica da Serra/SP</div>
+                        <div>• Extrema/MG</div>
+                        <div>• Itapeva/MG</div>
+                        <div>• Miracatu/SP</div>
+                        <div>• Pouso Alegre/MG</div>
+                        <div>• Varginha/MG</div>
+                        <div>• Três Corações/MG</div>
                       </div>
-                      <div className="bg-red-50 border border-red-100 rounded-2xl p-6">
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-[10px] text-red-700 font-medium">
-                          <div>• Cambuí/MG</div>
-                          <div>• Campanha/MG</div>
-                          <div>• Embu das Artes-SP</div>
-                          <div>• Itatiaiuçu-MG</div>
-                          <div>• Carmópolis de Minas-MG</div>
-                          <div>• Guarulhos-SP</div>
-                          <div>• Itaquara-MG</div>
-                          <div>• Igarapé-MG</div>
-                          <div>• Itapecerica da Serra-SP</div>
-                          <div>• Extrema-MG</div>
-                          <div>• Itapeva-MG</div>
-                          <div>• Miracatu-SP</div>
-                          <div>• Pouso Alegre-MG</div>
-                          <div>• Varginha-MG</div>
-                        </div>
-                        <div className="mt-6 pt-4 border-t border-red-200 text-center">
-                          <p className="text-xs font-bold text-red-800 uppercase tracking-tight">
-                            Proibido Parada entre as cidades de Joinville/SC até Palhoça/SC
-                          </p>
-                        </div>
+                      <div className="mt-6 pt-4 border-t border-red-200 text-center">
+                        <p className="text-xs font-bold text-red-800 uppercase tracking-tight">
+                          Proibido Parada entre as cidades de Joinville/SC até Palhoça/SC
+                        </p>
+                        <p className="text-[9px] text-red-600 mt-1">
+                          Trechos proibidos em Santa Catarina e áreas urbanas de alto risco.
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -624,7 +511,7 @@ export const DriverSignature: React.FC = () => {
                   onClick={() => setStep(3)}
                   className="bg-indigo-600 text-white px-10 py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all"
                 >
-                  Ir para Assinatura <ChevronRight className="w-5 h-5" />
+                  Prosseguir para Checklist <ChevronRight className="w-5 h-5" />
                 </button>
               </div>
             </motion.div>
@@ -636,40 +523,81 @@ export const DriverSignature: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 md:p-12 space-y-10"
+              className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden"
             >
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto">
-                  <Lock className="w-8 h-8 text-indigo-600" />
+              <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <ClipboardCheck className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-slate-800">Check-list Presencial Veicular</h2>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                      Gerado em: {new Date(contract.created_at).toLocaleDateString('pt-BR')} às {new Date(contract.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-slate-900">Assinatura Digital</h2>
-                  <p className="text-slate-400 text-sm font-medium">Assine no campo abaixo para validar o documento</p>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">v8.1 STL</div>
+              </div>
+
+              <div className="p-0">
+                <div className="bg-slate-50 p-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100">Itens Vistoriados</div>
+                <div className="divide-y divide-slate-100">
+                  {CHECKLIST_ITEMS.map((item, idx) => (
+                    <div key={idx} className="p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors">
+                      <div className="w-6 h-6 rounded bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400 shrink-0">
+                        {(idx + 1).toString().padStart(2, '0')}
+                      </div>
+                      <p className="text-xs text-slate-600 font-medium flex-1">{item}</p>
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+                          <CheckCircle className="w-4 h-4" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="bg-slate-50 p-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-y border-slate-100 mt-4">Aprovação Final</div>
+                <div className="p-6 flex items-center gap-4">
+                  <span className="text-sm font-bold text-slate-700">Veículo Aprovado:</span>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200 font-bold text-sm">
+                    <CheckCircle className="w-4 h-4" /> SIM
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 p-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-y border-slate-100">Assinatura Digital</div>
+                <div className="p-6 space-y-6">
+                  <div className="text-center space-y-2">
+                    <p className="text-slate-400 text-sm font-medium">Assine no campo abaixo para validar todos os documentos</p>
+                  </div>
+                  
+                  <SignaturePad onSave={handleSign} saving={saving} />
+                  
+                  {signatureData && (
+                    <div className="flex flex-col items-center gap-4 pt-4">
+                      <div className="p-2 bg-emerald-50 text-emerald-700 rounded-lg flex items-center gap-2 text-xs font-bold">
+                        <CheckCircle className="w-4 h-4" /> Assinatura Capturada
+                      </div>
+                      <button
+                        onClick={handleFinalize}
+                        disabled={saving}
+                        className="w-full bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-slate-800 shadow-lg shadow-slate-900/20 transition-all disabled:opacity-50"
+                      >
+                        {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><ShieldCheck className="w-5 h-5" /> Finalizar Registro</>}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="space-y-8">
-                <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Motorista</span>
-                    <p className="text-sm font-bold text-slate-700">{contract.data.motorista}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">CPF</span>
-                    <p className="text-sm font-bold text-slate-700">{contract.data.cpf}</p>
-                  </div>
-                </div>
-
-                <SignaturePad onSave={handleSign} saving={saving} />
-
-                <div className="flex justify-center">
-                  <button
-                    onClick={() => setStep(2)}
-                    className="text-slate-400 px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:text-slate-600 hover:bg-slate-50 transition-all text-xs uppercase tracking-widest"
-                  >
-                    <ChevronLeft className="w-4 h-4" /> Revisar Documentos
-                  </button>
-                </div>
+              <div className="p-6 bg-slate-50 flex justify-start">
+                <button
+                  onClick={() => setStep(2)}
+                  className="px-8 py-4 rounded-2xl font-bold text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
+                >
+                  <ChevronLeft className="w-5 h-5" /> Voltar para Rota
+                </button>
               </div>
             </motion.div>
           )}

@@ -10,6 +10,7 @@ interface SignaturePadProps {
 export const SignaturePad: React.FC<SignaturePadProps> = ({ onSave, onClear, saving }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [hasSignature, setHasSignature] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -29,6 +30,13 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({ onSave, onClear, sav
         // Aumentar a altura para facilitar a assinatura do nome completo, especialmente no mobile
         const isMobile = window.innerWidth < 640;
         canvas.height = isMobile ? 350 : 250;
+        // Redraw settings after resize
+        const newCtx = canvas.getContext('2d');
+        if (newCtx) {
+          newCtx.lineWidth = 2;
+          newCtx.lineCap = 'round';
+          newCtx.strokeStyle = '#000';
+        }
       }
     };
 
@@ -51,6 +59,7 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({ onSave, onClear, sav
 
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     setIsDrawing(true);
+    setHasSignature(true);
     const { x, y } = getPos(e);
     const ctx = canvasRef.current?.getContext('2d');
     ctx?.beginPath();
@@ -75,10 +84,15 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({ onSave, onClear, sav
     if (canvas && ctx) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
+    setHasSignature(false);
     onClear?.();
   };
 
   const save = () => {
+    if (!hasSignature) {
+      alert('Assinatura obrigatória para finalizar o documento');
+      return;
+    }
     const canvas = canvasRef.current;
     if (canvas) {
       onSave(canvas.toDataURL('image/png'));
@@ -112,8 +126,12 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({ onSave, onClear, sav
         </button>
         <button
           onClick={save}
-          disabled={saving}
-          className="flex-1 py-4 px-4 bg-indigo-600 text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          disabled={saving || !hasSignature}
+          className={`flex-1 py-4 px-4 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+            saving || !hasSignature 
+              ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
+              : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-600/20'
+          }`}
         >
           {saving ? (
             <>
