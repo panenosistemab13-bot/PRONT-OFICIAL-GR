@@ -150,7 +150,7 @@ const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({
               <img 
                 src={mapImage} 
                 alt={`Mapa para ${destination}`}
-                className="w-full h-full block object-cover relative z-0"
+                className="w-full h-full block object-cover relative z-0 scale-125"
                 referrerPolicy="no-referrer"
                 onError={handleImageError}
               />

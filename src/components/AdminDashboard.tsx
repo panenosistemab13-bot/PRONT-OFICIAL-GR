@@ -972,13 +972,12 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     y += 7;
 
     // Map & Itinerary Section
-    const mapWidth = 140;
-    const itineraryWidth = 50;
-    const sectionHeight = 100;
+    const mapWidth = 150;
+    const itineraryWidth = 40;
+    const sectionHeight = 120;
 
     // Map Area (Left)
-    doc.rect(10, y, mapWidth, sectionHeight);
-    
+    // Draw image first with a slight "zoom" to eliminate white margins
     let mapLoaded = false;
     try {
       const { data: mapData, error: mapError } = await supabase
@@ -989,7 +988,8 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
         .single();
 
       if (!mapError && mapData?.image_data) {
-        doc.addImage(mapData.image_data, 'PNG', 10, y, mapWidth, sectionHeight);
+        // Zoom in by drawing slightly larger and offset
+        doc.addImage(mapData.image_data, 'PNG', 10 - 5, y - 5, mapWidth + 10, sectionHeight + 10);
         mapLoaded = true;
       } else if (contract.data.mapa_arquivo) {
         const { data: { publicUrl } } = supabase.storage.from('mapas-rotas').getPublicUrl(contract.data.mapa_arquivo);
@@ -1001,13 +1001,26 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
             reader.onloadend = () => resolve(reader.result as string);
             reader.readAsDataURL(blob);
           });
-          doc.addImage(base64, 'PNG', 10, y, mapWidth, sectionHeight);
+          // Zoom in by drawing slightly larger and offset
+          doc.addImage(base64, 'PNG', 10 - 5, y - 5, mapWidth + 10, sectionHeight + 10);
           mapLoaded = true;
         }
       }
     } catch (e) {
       console.error("Erro ao carregar mapa para o PDF:", e);
     }
+
+    // Draw white rectangles around the map area to "mask" the zoom overflow
+    doc.setFillColor(255, 255, 255);
+    doc.rect(0, y - 10, 210, 10, 'F'); // Top mask
+    doc.rect(0, y + sectionHeight, 210, 50, 'F'); // Bottom mask
+    doc.rect(0, y, 10, sectionHeight, 'F'); // Left mask
+    doc.rect(10 + mapWidth, y, 60, sectionHeight, 'F'); // Right mask (covers itinerary area temporarily)
+
+    // Re-draw borders for the map area
+    doc.setDrawColor(0);
+    doc.setLineWidth(0.3);
+    doc.rect(10, y, mapWidth, sectionHeight);
 
     if (!mapLoaded) {
       doc.setFontSize(10);

@@ -15,6 +15,7 @@ import {
   Info,
   Lock
 } from 'lucide-react';
+import { LOGO_3_CORACOES } from '../constants';
 import { SignaturePad } from './SignaturePad';
 import { Contract } from '../types';
 import { supabase } from '../services/supabase';
@@ -258,143 +259,218 @@ export const DriverSignature: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden"
+              className="bg-white p-4 overflow-hidden"
             >
-              <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-indigo-100 rounded-lg">
-                    <ClipboardCheck className="w-5 h-5 text-indigo-600" />
-                  </div>
-                  <div>
-                    <h2 className="font-bold text-slate-800">Checklist de Segurança Veicular</h2>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                      Gerado em: {new Date(contract.created_at).toLocaleDateString('pt-BR')} às {new Date(contract.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">v8.1 STL</div>
-              </div>
-
-              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 border-b border-slate-100">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <User className="w-5 h-5 text-slate-400" />
-                    <div>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Motorista</p>
-                      <p className="text-sm font-bold text-slate-700">{contract.data.motorista || '-'}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <FileText className="w-5 h-5 text-slate-400" />
-                    <div>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">RG / CNH</p>
-                      <p className="text-sm font-bold text-slate-700">{contract.data.rg || '-'} / {contract.data.cnh || '-'}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <Truck className="w-5 h-5 text-slate-400" />
-                    <div>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Placa Cavalo / UF</p>
-                      <p className="text-sm font-bold text-slate-700">{contract.data.cavalo || '-'} / {contract.data.uf_placas || '-'}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <Truck className="w-5 h-5 text-slate-400" />
-                    <div>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Tipo Cavalo</p>
-                      <p className="text-sm font-bold text-slate-700">{contract.data.modelo_cavalo || contract.data.tipo_cavalo || '-'}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <ShieldCheck className="w-5 h-5 text-slate-400" />
-                    <div>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Tecnologia</p>
-                      <p className="text-sm font-bold text-slate-700">{contract.data.tecnologia || '-'}</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <FileText className="w-5 h-5 text-slate-400" />
-                    <div>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">CPF</p>
-                      <p className="text-sm font-bold text-slate-700">{contract.data.cpf || '-'}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <User className="w-5 h-5 text-slate-400" />
-                    <div>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Vínculo / Transportadora</p>
-                      <p className="text-sm font-bold text-slate-700">{contract.data.vinculo || '-'} / {contract.data.transportador || '-'}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <Truck className="w-5 h-5 text-slate-400" />
-                    <div>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Carreta 1 / Carreta 2</p>
-                      <p className="text-sm font-bold text-slate-700">{contract.data.carreta || '-'} / {contract.data.carreta2 || '-'}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <Truck className="w-5 h-5 text-slate-400" />
-                    <div>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Tipo Carreta</p>
-                      <p className="text-sm font-bold text-slate-700">{contract.data.modelo_carreta || contract.data.tipo_carreta || '-'}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-0">
-                <div className="bg-slate-50 p-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100">Itens a serem vistoriados - Segurança Patrimonial</div>
-                <div className="divide-y divide-slate-100">
-                  {CHECKLIST_ITEMS.map((item, idx) => (
-                    <div key={idx} className="p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors">
-                      <div className="w-6 h-6 rounded bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400 shrink-0">
-                        {(idx + 1).toString().padStart(2, '0')}
-                      </div>
-                      <p className="text-xs text-slate-600 font-medium flex-1">{item}</p>
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
-                          <CheckCircle className="w-4 h-4" />
+              <div className="w-full overflow-x-auto font-['Arial',_sans-serif]">
+                {/* Header Table */}
+                <table className="w-full border-collapse border border-black text-[10px] text-black">
+                  <tbody>
+                    <tr>
+                      <td rowSpan={3} className="border border-black p-2 w-[20%] text-center align-middle">
+                        <img src={LOGO_3_CORACOES} alt="3 Corações" className="h-12 mx-auto object-contain" />
+                      </td>
+                      <td rowSpan={3} className="border border-black p-1 text-center w-[55%] align-middle">
+                        <div className="font-bold text-xs">CHECK-LIST PRESENCIAL VEICULAR</div>
+                        <div className="font-bold text-xs">3 CORAÇÕES</div>
+                        <div className="font-bold text-[10px]">GERENCIAMENTO DE RISCOS E SEGUROS</div>
+                      </td>
+                      <td className="border border-black p-1 w-[25%] text-[9px] font-bold">
+                        <div className="flex justify-between">
+                          <span>IMPLANTAÇÃO:</span>
+                          <span>23/09/2015</span>
                         </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black p-1 text-[9px] font-bold">
+                        <div className="flex justify-between">
+                          <span>ATUALIZAÇÃO:</span>
+                          <span>01/01/2025</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black p-0 text-[9px] font-bold">
+                        <div className="flex h-full">
+                          <div className="flex-1 border-r border-black p-1">VERSÃO 8.1</div>
+                          <div className="w-12 p-1 text-center">STL</div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                {/* DADOS DO MOTORISTA Section */}
+                <table className="w-full border-collapse border-x border-b border-black text-[10px] text-black mt-[-1px]">
+                  <tbody>
+                    <tr>
+                      <td colSpan={6} className="bg-gray-300 border border-black p-1 text-center font-bold text-xs">
+                        DADOS DO MOTORISTA
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black p-1 w-[15%] font-bold">MOTORISTA:</td>
+                      <td colSpan={5} className="border border-black p-1 text-center font-bold uppercase">
+                        {contract.data.motorista || '-'}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black p-1 w-[10%] font-bold">CPF:</td>
+                      <td className="border border-black p-1 w-[23%] text-center font-bold text-black">
+                        {contract.data.cpf || '-'}
+                      </td>
+                      <td className="border border-black p-1 w-[10%] font-bold">RG:</td>
+                      <td className="border border-black p-1 w-[23%] text-center font-bold">
+                        {contract.data.rg || '-'}
+                      </td>
+                      <td className="border border-black p-1 w-[10%] font-bold">CNH:</td>
+                      <td className="border border-black p-1 w-[24%] text-center font-bold">
+                        {contract.data.cnh || '-'}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black p-1 font-bold">VÍNCULO:</td>
+                      <td colSpan={5} className="border border-black p-1 text-center font-bold uppercase">
+                        FROTA
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                {/* DADOS DO VEÍCULO Section */}
+                <table className="w-full border-collapse border-x border-b border-black text-[10px] text-black mt-[-1px]">
+                  <tbody>
+                    <tr>
+                      <td colSpan={3} className="bg-gray-300 border border-black p-1 text-center font-bold text-xs">
+                        DADOS DO VEÍCULO
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black p-1 w-[40%]">
+                        <span className="font-bold">Transportadora: </span>
+                        <span className="font-bold ml-10 uppercase">{contract.data.transportador || '-'}</span>
+                      </td>
+                      <td colSpan={2} className="border border-black p-1 text-center font-bold">
+                        UF DAS PLACAS :
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black p-1 font-bold">Placa do Cavalo</td>
+                      <td className="border border-black p-1 text-center font-bold uppercase">
+                        {contract.data.cavalo || '-'}
+                      </td>
+                      <td className="border border-black p-1 text-center font-bold uppercase">
+                        MG
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black p-1 font-bold">Placa Carreta 1</td>
+                      <td className="border border-black p-1 text-center font-bold uppercase">
+                        {contract.data.carreta || '-'}
+                      </td>
+                      <td className="border border-black p-1 text-center font-bold uppercase">
+                        MG
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black p-1 font-bold">Placa Carreta 2</td>
+                      <td className="border border-black p-1 text-center font-bold uppercase">
+                        {contract.data.carreta2 || '-'}
+                      </td>
+                      <td className="border border-black p-1 text-center font-bold uppercase">
+                        MG
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black p-1 w-1/3">
+                        <div className="font-bold">Tipo de Carreta:</div>
+                        <div className="text-red-600 font-bold text-center uppercase">
+                          {contract.data.modelo_carreta || contract.data.tipo_carreta || '-'}
+                        </div>
+                      </td>
+                      <td className="border border-black p-1 w-1/3">
+                        <div className="font-bold">Tipo de cavalo:</div>
+                        <div className="text-red-600 font-bold text-center uppercase">
+                          {contract.data.modelo_cavalo || contract.data.tipo_cavalo || '-'}
+                        </div>
+                      </td>
+                      <td className="border border-black p-1 w-1/3">
+                        <div className="font-bold">Tecnologia do veículo:</div>
+                        <div className="text-red-600 font-bold text-center uppercase">
+                          {contract.data.tecnologia || '-'}
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                {/* ITENS A SEREM VISTORIADOS Section */}
+                <table className="w-full border-collapse border-x border-b border-black text-[9px] mt-[-1px]">
+                  <tbody>
+                    <tr>
+                      <td colSpan={5} className="bg-gray-300 border border-black p-1 text-center font-bold text-xs">
+                        ITENS A SEREM VISTORIADOS - SEGURANÇA PATRIMONIAL
+                      </td>
+                    </tr>
+                    <tr className="bg-gray-200 font-bold text-center">
+                      <td className="border border-black p-1 w-[5%]">ITEM</td>
+                      <td className="border border-black p-1 w-[65%]">DESCRIÇÃO</td>
+                      <td className="border border-black p-1 w-[5%]">CONF</td>
+                      <td className="border border-black p-1 w-[5%]">ÑCON</td>
+                      <td className="border border-black p-1 w-[20%]">OBSERVAÇÕES</td>
+                    </tr>
+                    {CHECKLIST_ITEMS.map((item, idx) => (
+                      <tr key={idx}>
+                        <td className="border border-black p-1 text-center">{(idx + 1).toString().padStart(2, '0')}</td>
+                        <td className="border border-black p-1 leading-tight">{item}</td>
+                        <td className="border border-black p-1 text-center font-mono font-bold">[X]</td>
+                        <td className="border border-black p-1 text-center font-mono">[ ]</td>
+                        <td className="border border-black p-1 text-[7px] italic">
+                          {(idx === 16 || idx === 17) ? "ok, não se aplica a baú ou câmara fria" : ""}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* Equipamentos de Segurança Section */}
+                <div className="border-x border-b border-black p-2 mt-[-1px]">
+                  <div className="grid grid-cols-3 gap-y-1 text-[9px] font-bold">
+                    {[
+                      "Posicionamento", "Trava de Baú", "Sensores Porta Motorista",
+                      "Cabo de Engate", "Sirene", "Sensores Porta Carona",
+                      "Sistema de Bloqueio", "Teclado", "Sensores de Baú"
+                    ].map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-1">
+                        <span className="font-mono">[X]</span>
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-black">
+                    <div className="flex items-center gap-4">
+                      <span className="font-bold text-[10px]">Veículo Aprovado</span>
+                      <span className="font-mono font-bold text-[10px]">[X] SIM</span>
+                      <span className="font-mono text-[10px]">[ ] NÃO</span>
+                    </div>
+                    <div className="flex-1 ml-4 flex items-center gap-2">
+                      <span className="font-bold text-[10px]">OBS:</span>
+                      <div className="flex-1 border-b border-black h-4"></div>
+                      <div className="text-[8px] text-red-600 font-bold">
+                        {new Date().toLocaleDateString('pt-BR')} {new Date().toLocaleTimeString('pt-BR')}
                       </div>
                     </div>
-                  ))}
-                </div>
-                
-                <div className="bg-slate-50 p-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-y border-slate-100 mt-4">Equipamentos de Segurança</div>
-                <div className="p-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {[
-                    "Posicionamento", "Trava de Baú", "Sensores Porta Motorista",
-                    "Cabo de Engate", "Sirene", "Sensores Porta Carona",
-                    "Sistema de Bloqueio", "Teclado", "Sensores de Baú"
-                  ].map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
-                        <CheckCircle className="w-3 h-3" />
-                      </div>
-                      <span className="text-xs font-medium text-slate-600">{item}</span>
-                    </div>
-                  ))}
+                  </div>
                 </div>
 
-                <div className="bg-slate-50 p-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-y border-slate-100">Aprovação</div>
-                <div className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm font-bold text-slate-700">Veículo Aprovado:</span>
-                    <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200 font-bold text-sm">
-                      <CheckCircle className="w-4 h-4" /> SIM
-                    </div>
-                  </div>
-                  <div className="flex-1 w-full">
-                    <div className="text-xs font-bold text-slate-500 mb-1">OBS:</div>
-                    <div className="w-full h-10 bg-slate-50 rounded-xl border border-slate-200"></div>
-                  </div>
+                {/* Signature Section */}
+                <div className="border-x border-b border-black p-4 mt-[-1px] h-24 flex flex-col justify-between">
+                  <div className="font-bold text-[10px]">ASSINATURA DO MOTORISTA:</div>
+                  <div className="w-1/2 border-t border-black mt-8"></div>
                 </div>
               </div>
 
-              <div className="p-8 bg-slate-50 flex justify-end">
+              <div className="p-8 flex justify-end">
                 <button
                   onClick={() => setStep(2)}
                   className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all"
