@@ -969,29 +969,39 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     doc.text(`Plano de Rota (${origem} x ${destino})`, pageWidth / 2, y + 4.5, { align: 'center' });
     y += 6;
 
-    // Tentar carregar o mapa real
+    // Tentar carregar o mapa real da tabela 'maps'
     let mapLoaded = false;
-    if (contract.data.mapa_arquivo) {
-      try {
-        const { data: { publicUrl } } = supabase.storage.from('mapas-rotas').getPublicUrl(contract.data.mapa_arquivo);
-        
-        // Fetch image and convert to base64
-        const response = await fetch(publicUrl);
-        if (response.ok) {
-          const blob = await response.blob();
-          const base64 = await new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.readAsDataURL(blob);
-          });
-          
-          // Preencher todo o box (130x80) sem margens internas
-          doc.addImage(base64, 'PNG', 10, y, 130, 80);
-          mapLoaded = true;
+    try {
+      const { data: mapData, error: mapError } = await supabase
+        .from('maps')
+        .select('image_data')
+        .ilike('destination', `%${destino}%`)
+        .limit(1)
+        .single();
+
+      if (!mapError && mapData?.image_data) {
+        // Preencher todo o box (130x80) sem margens internas
+        doc.addImage(mapData.image_data, 'PNG', 10, y, 130, 80);
+        mapLoaded = true;
+      } else {
+        // Fallback para o storage se não encontrar na tabela maps (opcional, mas bom para transição)
+        if (contract.data.mapa_arquivo) {
+          const { data: { publicUrl } } = supabase.storage.from('mapas-rotas').getPublicUrl(contract.data.mapa_arquivo);
+          const response = await fetch(publicUrl);
+          if (response.ok) {
+            const blob = await response.blob();
+            const base64 = await new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.readAsDataURL(blob);
+            });
+            doc.addImage(base64, 'PNG', 10, y, 130, 80);
+            mapLoaded = true;
+          }
         }
-      } catch (e) {
-        console.error("Erro ao carregar mapa para o PDF:", e);
       }
+    } catch (e) {
+      console.error("Erro ao carregar mapa para o PDF:", e);
     }
 
     // Desenhar o box por cima (para manter a borda visível se houver imagem)
@@ -1012,21 +1022,26 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     doc.setFont("helvetica", "bold");
     doc.text("Cidades do Itinerário :", 170, y + 4.5, { align: 'center' });
     
-    const itinerary = [
-      `» ${origem}`,
-      "» Carmópolis de Minas/MG",
-      "» Pouso Alegre/MG",
-      "» Bragança Paulista/SP",
-      "» Jarinu/SP",
-      "» Juquitiba/SP",
-      "» São José dos Pinhais/PR",
-      "» Joinville/SC",
-      `» ${destino}`
-    ];
+    // Processar o itinerário do contrato ou usar o padrão
+    const trajetoRaw = contract.data.trajeto || "";
+    const cities = trajetoRaw 
+      ? trajetoRaw.split(/[;|\n]+/).map(city => `» ${city.trim()}`).filter(city => city.length > 2)
+      : [
+          `» ${origem}`,
+          "» Carmópolis de Minas/MG",
+          "» Pouso Alegre/MG",
+          "» Bragança Paulista/SP",
+          "» Jarinu/SP",
+          "» Juquitiba/SP",
+          "» São José dos Pinhais/PR",
+          "» Joinville/SC",
+          `» ${destino}`
+        ];
 
     doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
     let itY = y + 10;
-    itinerary.forEach(city => {
+    cities.slice(0, 15).forEach(city => { // Limitar a 15 cidades para caber no box
       doc.text(city, 142, itY);
       doc.line(140, itY + 1, 200, itY + 1);
       itY += 4.5;

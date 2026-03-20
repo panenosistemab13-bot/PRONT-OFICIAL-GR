@@ -502,7 +502,10 @@ export const DriverSignature: React.FC = () => {
                       </div>
                       
                       {contract.data.destino ? (
-                        <VisualizadorDeMapa destination={contract.data.destino} filename={contract.data.mapa_arquivo} />
+                        <VisualizadorDeMapa 
+                          destination={contract.data.destino} 
+                          itinerary={contract.data.trajeto} 
+                        />
                       ) : (
                         <div className="p-6 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-center justify-center">
                           <AlertCircle className="w-5 h-5 text-red-500" />
