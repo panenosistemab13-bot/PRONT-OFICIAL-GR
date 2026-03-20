@@ -26,6 +26,19 @@ export interface DriverData {
   tipo_cavalo?: string;
   tecnologia?: string;
   trajeto?: string;
+  n_pallets?: string;
+  pbt?: string;
+  m3?: string;
+  categoria?: string;
+  codigo_transportadora?: string;
+  id_carga?: string;
+  estado_motorista?: string;
+  estado_cavalo?: string;
+  estado_carreta?: string;
+  pendencia?: string;
+  check_list?: string;
+  valido?: string;
+  dias?: string;
 }
 
 export interface Contract {

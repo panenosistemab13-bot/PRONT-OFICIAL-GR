@@ -196,15 +196,27 @@ export const AdminDashboard: React.FC = () => {
         transportador: parts[11] || '',
         cavalo: parts[12] || '',
         carreta: parts[13] || '',
-        motorista: parts[21] || parts[14] || '', // Ajustado: O nome parece estar no índice 21
-        cpf: parts[22] || parts[15] || '',       // Ajustado: O CPF parece estar no índice 22
-        rg: parts[16] || '',
-        cnh: parts[17] || '',
-        telefone: parts[18] || '',
-        vigencia_cadastro: parts[19] || '',
-        vinculo: parts[20] || '',
-        uf_placas: parts[14] || '',             // Movendo o valor "24" para cá se for o caso
-        tecnologia: parts[23] || '',            // Tecnologia deve estar após o CPF
+        n_pallets: parts[14] || '',
+        pbt: parts[15] || '',
+        m3: parts[16] || '',
+        categoria: parts[17] || '',
+        tecnologia: parts[18] || '',
+        motorista: parts[19] || '',
+        cpf: parts[20] || '',
+        rg: parts[21] || '',
+        cnh: parts[22] || '',
+        telefone: parts[23] || '',
+        vigencia_cadastro: parts[24] || '',
+        codigo_transportadora: parts[25] || '',
+        id_carga: parts[26] || '',
+        estado_motorista: parts[27] || '',
+        estado_cavalo: parts[28] || '',
+        estado_carreta: parts[29] || '',
+        pendencia: parts[30] || '',
+        check_list: parts[31] || '',
+        valido: parts[33] || '',
+        dias: parts[34] || '',
+        carreta2: parts[35] || '',
       };
 
       // Passo 1: Criar o "Termo Padrão" no Código
