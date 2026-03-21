@@ -1119,11 +1119,6 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
       y += 6;
     }
 
-    y += 2;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.text("Proibido Parada entre as cidades de Joinville/SC até Palhoça/SC", pageWidth / 2, y + 4, { align: 'center' });
-    doc.line(60, y + 5, 150, y + 5);
     y += 10;
 
     // Bottom Data Table

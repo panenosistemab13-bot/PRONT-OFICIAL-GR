@@ -505,14 +505,6 @@ export const DriverSignature: React.FC = () => {
                           </p>
                         </div>
                       )}
-                      <div className="mt-6 pt-4 border-t border-red-200 text-center">
-                        <p className="text-xs font-bold text-red-800 uppercase tracking-tight">
-                          Proibido Parada entre as cidades de Joinville/SC até Palhoça/SC
-                        </p>
-                        <p className="text-[9px] text-red-600 mt-1">
-                          Trechos proibidos em Santa Catarina e áreas urbanas de alto risco.
-                        </p>
-                      </div>
                     </div>
                   </div>
                 </div>
