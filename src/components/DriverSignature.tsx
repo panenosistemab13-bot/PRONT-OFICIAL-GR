@@ -63,6 +63,25 @@ export const DriverSignature: React.FC = () => {
   const [step, setStep] = useState(1); // 1: Termo, 2: Plano de Rota, 3: Checklist + Assinatura
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [signatureData, setSignatureData] = useState<string | null>(null);
+  const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
+  const termsRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (termsRef.current) {
+      const { scrollHeight, clientHeight } = termsRef.current;
+      // If content is not scrollable, allow proceeding immediately
+      if (scrollHeight <= clientHeight) {
+        setHasScrolledToBottom(true);
+      }
+    }
+  }, []);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    if (scrollTop + clientHeight >= scrollHeight - 10) {
+      setHasScrolledToBottom(true);
+    }
+  };
 
   const transportadorasChecklist = [
     'TOMASI', 'TRANSMAGNA', 'GOBOR', 'APK', 'GT MINAS', 
@@ -310,7 +329,7 @@ export const DriverSignature: React.FC = () => {
               </div>
 
               <div className="prose prose-slate max-w-none">
-                <div className="text-sm leading-relaxed text-slate-600 space-y-6 text-justify bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                <div ref={termsRef} className="text-sm leading-relaxed text-slate-600 space-y-6 text-justify bg-slate-50 p-6 rounded-2xl border border-slate-100 max-h-[400px] overflow-y-auto" onScroll={handleScroll}>
                   {contract.data.termo_personalizado ? (
                     <p className="whitespace-pre-line font-medium text-slate-800">
                       {contract.data.termo_personalizado}
@@ -335,6 +354,11 @@ export const DriverSignature: React.FC = () => {
                     </>
                   )}
                 </div>
+                {!hasScrolledToBottom && (
+                  <p className="text-xs text-center text-indigo-600 font-bold mt-2 animate-pulse">
+                    Role até o final para continuar...
+                  </p>
+                )}
 
                 <div className="mt-8 space-y-4">
                   <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">Dados da Viagem</h4>
@@ -412,7 +436,8 @@ export const DriverSignature: React.FC = () => {
               <div className="flex justify-end pt-6">
                 <button
                   onClick={() => setStep(2)}
-                  className="bg-indigo-600 text-white px-10 py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all"
+                  disabled={!hasScrolledToBottom}
+                  className={`bg-indigo-600 text-white px-10 py-4 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg shadow-indigo-600/20 transition-all ${!hasScrolledToBottom ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700'}`}
                 >
                   Confirmar e Prosseguir <ChevronRight className="w-5 h-5" />
                 </button>
