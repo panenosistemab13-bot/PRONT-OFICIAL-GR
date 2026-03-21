@@ -1,5 +1,4 @@
 import { LOGO_3_CORACOES } from '../constants';
-import { PDF_CONTENT } from '../content';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -242,35 +241,11 @@ export const AdminDashboard: React.FC = () => {
         uf_placas: parts[28] || '', // Usando estado_cavalo como UF padrão
       };
 
-      // Passo 1: Buscar informações da rota na tabela rotas_mestres baseada no destino
-      let itinerarioFinal = parsedInfo.trajeto || parsedInfo.destino || '';
-      let paradasProibidasFinal = '';
-
-      try {
-        const { data: routeData } = await supabase
-          .from('rotas_mestres')
-          .select('itinerario, paradas_proibidas')
-          .ilike('destino', `%${parsedInfo.destino}%`)
-          .limit(1)
-          .single();
-        
-        if (routeData) {
-          itinerarioFinal = parsedInfo.trajeto || routeData.itinerario || itinerarioFinal;
-          paradasProibidasFinal = routeData.paradas_proibidas || '';
-        }
-      } catch (err) {
-        console.warn("Rota mestre não encontrada para o destino:", parsedInfo.destino);
-      }
-
-      // Atualizar parsedInfo com os dados da rota
-      parsedInfo.trajeto = itinerarioFinal;
-      parsedInfo.paradas_proibidas = paradasProibidasFinal;
-
       // Passo 1: Criar o "Termo Padrão" no Código
       const termoTemplate = `
 TERMO DE RESPONSABILIDADE E RETIRADA
-Eu, {nome_motorista}, portador do CPF {cpf} e CNH {cnh}, declaro que recebi o termo 
-da placa {placa} na data de {data}.
+Eu, {nome_motorista}, portador do CPF {cpf} e CNH {cnh}, declaro que recebi o veículo 
+de placa {placa} em perfeitas condições operacionais na data de {data}.
 Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
 `;
 
@@ -426,7 +401,7 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
     
     doc.setFontSize(7.5);
     doc.setFont("helvetica", "normal");
-    const introText = PDF_CONTENT.termo.corpo;
+    const introText = "Declaro para os devidos fins, que fui contratado(a) pela transportadora, cujos dados seguem abaixo, para efetuar o transporte de carga do embarcador TRÊS CORAÇÕES ALIMENTOS S.A., CAFÉ TRÊS CORAÇÕES S.A.\n\nEstou ciente quanto às normas e procedimentos descritos nos itens a seguir. Confirmo que li e compreendi todas as regras repassadas quanto ao Gerenciamento de Riscos e me comprometo a cumpri-las em sua totalidade.\nComprometo-me a entregar a carga ao destinatário, em iguais condições em que recebi. Além de, no decorrer do percurso, colher carimbo e assinatura em todos os Postos Fiscais.\n\nEstou ciente que, em caso de descumprimento das normas indicadas neste documento, poderei ser responsabilizado civil e criminalmente pelos danos causados à carga em caso de sinistro, estando eu em desacordo com as regras impostas a mim. Dessa forma, fica a critério do embarcador me bloquear ou não para carregamento através da Central de Gerenciamento de Riscos.\n\nTambém estou ciente de que o veículo não pode ser retirado do local de descarga e/ou estacionamento sem autorização da Logística da Filial.";
     const splitIntro = doc.splitTextToSize(introText, 170);
     doc.text(splitIntro, 20, y);
     y += (splitIntro.length * 3.2) + 6;
@@ -446,7 +421,7 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
 
     doc.setFont("helvetica", "bold");
     doc.text("Data:", col1, y);
-    doc.setFont("helvetica", "normal");
+    doc.setFont("helvetica", "bold");
     doc.text(new Date(contract.created_at).toLocaleDateString('pt-BR'), col1 + 10, y);
 
     doc.setFont("helvetica", "bold");
@@ -457,62 +432,92 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
     doc.setTextColor(0, 0, 0);
 
     doc.setFont("helvetica", "bold");
-    doc.text("Vínculo:", col3, y);
-    doc.setFont("helvetica", "normal");
-    doc.text(contract.data.vinculo || 'FROTA', col3 + 15, y);
+    doc.text("Transportadora:", col3, y);
+    doc.setFont("helvetica", "bold");
+    doc.text(String(contract.data.transportador || '-').substring(0, 25), col3 + 25, y);
 
     y += 5;
     doc.setFont("helvetica", "bold");
     doc.text("Motorista:", col1, y);
-    doc.setFont("helvetica", "normal");
+    doc.setFont("helvetica", "bold");
     doc.text(String(contract.data.motorista || '-').substring(0, 38), col1 + 16, y);
 
     doc.setFont("helvetica", "bold");
-    doc.text("Placa Cavalo:", col2, y);
-    doc.setFont("helvetica", "normal");
-    doc.text(contract.data.cavalo || '-', col2 + 22, y);
-
+    doc.text("Vínculo:", col2, y);
     doc.setFont("helvetica", "bold");
-    doc.text("Carreta I:", col3, y);
-    doc.setFont("helvetica", "normal");
-    doc.text(contract.data.carreta || '-', col3 + 16, y);
+    doc.text(contract.data.vinculo || '-', col2 + 14, y);
 
     y += 5;
     doc.setFont("helvetica", "bold");
-    doc.text("Modelo Cavalo:", col1, y);
-    const modeloCavalo = (contract.data.modelo_cavalo || '-').toUpperCase();
-    if (modeloCavalo.includes('TRUCADO')) {
-      doc.setTextColor(255, 0, 0);
-    }
-    doc.text(modeloCavalo, col1 + 25, y);
-    doc.setTextColor(0, 0, 0);
+    doc.text("Placa Cavalo:", col1, y);
+    doc.setFont("helvetica", "bold");
+    doc.text(contract.data.cavalo || '-', col1 + 22, y);
 
     doc.setFont("helvetica", "bold");
-    doc.text("Modelo Carreta:", col2, y);
-    const modeloCarreta = (contract.data.modelo_carreta || '-').toUpperCase();
-    if (modeloCarreta.includes('RODOTREM BAÚ')) {
-      doc.setTextColor(255, 0, 0);
-    }
-    doc.text(modeloCarreta, col2 + 25, y);
-    doc.setTextColor(0, 0, 0);
+    doc.text("Carreta I:", col2, y);
+    doc.setFont("helvetica", "bold");
+    doc.text(contract.data.carreta || '-', col2 + 16, y);
 
     doc.setFont("helvetica", "bold");
-    doc.text("Tecnologia:", col3, y);
+    doc.text("Carreta II:", col3, y);
+    doc.setFont("helvetica", "bold");
+    doc.text(contract.data.carreta2 || '-', col3 + 16, y);
+
+    y += 5;
+    doc.setFont("helvetica", "bold");
+    doc.text("Trajeto:", col1, y);
+    doc.setFont("helvetica", "bold");
+    const origem = contract.data.origem || 'SANTA LUZIA|MG';
+    const destino = contract.data.destino || 'GOV. CELSO RAMOS';
+    
+    doc.text(origem, col1 + 13, y);
+    const origemWidth = doc.getTextWidth(origem);
+    
+    doc.setDrawColor(0);
+    doc.rect(col1 + 15 + origemWidth, y - 3.5, 4, 4);
+    doc.setFont("helvetica", "bold");
+    doc.text("X", col1 + 16 + origemWidth, y - 0.5);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text(destino, col1 + 21 + origemWidth, y);
+
+    y += 5;
+    doc.setFont("helvetica", "bold");
+    doc.text("Tecnologia:", col1, y);
+    doc.setFont("helvetica", "bold");
     const tecnologia = (contract.data.tecnologia || '-').toUpperCase();
     if (tecnologia.includes('SASCAR')) {
       doc.setTextColor(255, 0, 0); // Red for SASCAR
     }
-    doc.text(tecnologia, col3 + 18, y);
+    doc.text(tecnologia, col1 + 18, y);
     doc.setTextColor(0, 0, 0);
 
     // Rules Section
-    y += 10;
+    y += 8;    // Check if y is too close to bottom, add page if needed
     if (y > 260) {
       doc.addPage();
       y = 20;
     }
 
-    const rulesText = PDF_CONTENT.termo.regras;
+    const rulesText = `Ao informar início de viagem, deverá aguardar a mensagem **“Ok, Liberado”** que será enviada pela Central de Monitoramento 3corações, autorizando o prosseguimento da viagem;
+Informar todas as paradas e reinícios durante a viagem;
+Ao chegar no local de descarga, enviar macro **“CHEGADA NO CLIENTE”**, e enviando a macro de **“FIM DE VIAGEM”**, somente quando a descarga for finalizada;
+**É proibido parar antes dos 150 km iniciais**, exceto paradas obrigatórias ou problema mecânico/elétrico;
+**É proibido pernoite em residência;**
+Respeitar o horário de rodagem, no período de **05h00min às 22h00min**;
+O veículo será desbloqueado após o pernoite, somente mediante confirmação de senha de segurança do motorista, via teclado;
+Evitar pernoite sob cobertura, evitando perda de sinal da antena;
+**Não conceder carona;**
+Seguir o trajeto predeterminado;
+Respeitar o limite de velocidade da via, não excedendo o limite de **80km/h**;
+Manter a central informada de todas as anormalidades durante o percurso, mantendo a comunicação, via macro, como também pelos telefones: **Fixo (85) 4006.5522 (escolher a opção desejada); WhatsApp (85) 99198.2886 (apenas mensagem e áudio);**
+Dirigir preventivamente, evitando acidentes, preservando sua própria vida, a vida de terceiros e também carga do embarcador;
+Não oferecer, dar ou aceitar de quem quer que seja, tanto por conta própria ou através de terceiro, qualquer pagamento, doação, compensação, vantagens ou benefícios de qualquer natureza que constituam prática ilegal ou prática de corrupção sob as leis de qualquer país;
+**(Proibido passagem por Sergipe);**
+Destino Rio de Janeiro: Agendar escolta com 2 horas de antecedência do ponto de encontro, no pedágio desativado em Duque de Caxias/RJ, evitar rodar depois das 17 horas dentro da área urbana da cidade. Caso necessário, o pernoite acontecerá mais cedo na cidade de Três Rios/RJ (Posto Ipirangão);
+Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e Frango Assado;
+
+**Caso tenha dúvidas, contate nossa central de monitoramento pelos telefones acima informados.**`;
 
     const renderRichText = (doc: jsPDF, text: string, startX: number, startY: number, maxWidth: number, lineHeight: number) => {
       let currentX = startX;
@@ -983,10 +988,11 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
     y += 7;
 
     // Map & Itinerary Section
-    const mapWidth = 190;
-    const sectionHeight = 100;
+    const mapWidth = 150;
+    const itineraryWidth = 40;
+    const sectionHeight = 120;
 
-    // Map Area (Full Width)
+    // Map Area (Left)
     // Draw image first with a slight "zoom" to eliminate white margins
     let mapLoaded = false;
     try {
@@ -1023,9 +1029,9 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
     // Draw white rectangles around the map area to "mask" the zoom overflow
     doc.setFillColor(255, 255, 255);
     doc.rect(0, y - 10, 210, 10, 'F'); // Top mask
-    doc.rect(0, y + sectionHeight, 210, 10, 'F'); // Bottom mask
+    doc.rect(0, y + sectionHeight, 210, 50, 'F'); // Bottom mask
     doc.rect(0, y, 10, sectionHeight, 'F'); // Left mask
-    doc.rect(10 + mapWidth, y, 10, sectionHeight, 'F'); // Right mask
+    doc.rect(10 + mapWidth, y, 60, sectionHeight, 'F'); // Right mask (covers itinerary area temporarily)
 
     // Re-draw borders for the map area
     doc.setDrawColor(0);
@@ -1039,49 +1045,36 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
       doc.text("(Visualização do mapa indisponível)", 10 + mapWidth / 2, y + sectionHeight / 2 + 5, { align: 'center' });
     }
 
-    y += sectionHeight + 5;
-
-    // Itinerary Section (Below Map)
+    // Itinerary Table (Right)
+    doc.rect(10 + mapWidth, y, itineraryWidth, sectionHeight);
     doc.setFillColor(240, 240, 240);
-    doc.rect(10, y, 190, 6, 'F');
-    doc.rect(10, y, 190, 6);
+    doc.rect(10 + mapWidth, y, itineraryWidth, 6, 'F');
+    doc.rect(10 + mapWidth, y, itineraryWidth, 6);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7.5);
-    doc.text("Cidades do Itinerário :", pageWidth / 2, y + 4, { align: 'center' });
-    y += 6;
-
+    doc.text("Cidades do Itinerário :", 10 + mapWidth + itineraryWidth / 2, y + 4, { align: 'center' });
+    
     const trajetoRaw = contract.data.trajeto || "";
     const cities = trajetoRaw 
-      ? trajetoRaw.split(/[;,\n|]+/).map(city => city.trim()).filter(city => city.length > 2)
-      : [origem, destino];
+      ? trajetoRaw.split(/[;|\n]+/).map(city => `» ${city.trim()}`).filter(city => city.length > 2)
+      : [`» ${origem}`, "» Carmópolis de Minas/MG", "» Pouso Alegre/MG", "» Bragança Paulista/SP", "» Jarinu/SP", "» Juquitiba/SP", "» São José dos Pinhais/PR", "» Joinville/SC", `» ${destino}`];
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(6.5);
-    
-    // Draw itinerary in a grid (5 columns)
-    const colWidth = 38;
-    let itX = 10;
-    let itY = y + 4;
-
-    cities.slice(0, 30).forEach((city, idx) => {
-      doc.text(`» ${city}`, itX + 2, itY);
-      doc.line(itX, itY + 1, itX + colWidth, itY + 1);
-      
-      if ((idx + 1) % 5 === 0) {
-        itX = 10;
-        itY += 4.5;
-      } else {
-        itX += colWidth;
-      }
+    let itY = y + 10;
+    cities.slice(0, 20).forEach(city => {
+      doc.text(city, 10 + mapWidth + 2, itY);
+      doc.line(10 + mapWidth, itY + 1, 10 + mapWidth + itineraryWidth, itY + 1);
+      itY += 4.5;
     });
-
-    // Draw vertical lines for the grid
-    const gridHeight = Math.max(itY - y, 4.5);
-    for (let i = 0; i <= 5; i++) {
-      doc.line(10 + i * colWidth, y, 10 + i * colWidth, y + gridHeight);
-    }
     
-    y = y + gridHeight + 5;
+    // Fill remaining lines for table look
+    while (itY < y + sectionHeight) {
+      doc.line(10 + mapWidth, itY + 1, 10 + mapWidth + itineraryWidth, itY + 1);
+      itY += 4.5;
+    }
+
+    y += sectionHeight + 5;
 
     // Forbidden Stops Section
     doc.setFillColor(240, 240, 240);
@@ -1092,26 +1085,23 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
     doc.text("PARADAS PROIBIDAS", pageWidth / 2, y + 5, { align: 'center' });
     y += 7;
 
-    const forbiddenStopsRaw = contract.data.paradas_proibidas || "";
-    const forbiddenStopsList = forbiddenStopsRaw 
-      ? forbiddenStopsRaw.split(/[;,\n|]+/).map(s => s.trim()).filter(s => s.length > 2)
-      : [];
-
-    // Chunk into rows of 3
-    const forbiddenRows = [];
-    for (let i = 0; i < forbiddenStopsList.length; i += 3) {
-      forbiddenRows.push(forbiddenStopsList.slice(i, i + 3));
-    }
+    const forbiddenStops = [
+      ["Cambuí/MG", "Campanha/MG", "Embu das Artes-SP"],
+      ["Itatiaiuçu-MG", "Carmópolis de Minas-MG", "Guarulhos-SP (exceto P. Sakamoto)"],
+      ["Itaquara-MG", "Igarapé-MG", "Itapecerica da Serra-SP"],
+      ["Extrema-MG", "Itapeva-MG", "Miracatu-SP"],
+      ["Pouso Alegre-MG", "Varginha-MG", ""]
+    ];
 
     doc.setFontSize(7);
-    forbiddenRows.slice(0, 8).forEach(row => {
+    forbiddenStops.forEach(row => {
       doc.rect(10, y, 63.3, 6);
       doc.rect(73.3, y, 63.3, 6);
       doc.rect(136.6, y, 63.3, 6);
       doc.setFont("helvetica", "normal");
-      doc.text(row[0] || "", 12, y + 4.5);
-      doc.text(row[1] || "", 75.3, y + 4.5);
-      doc.text(row[2] || "", 138.6, y + 4.5);
+      doc.text(row[0], 12, y + 4.5);
+      doc.text(row[1], 75.3, y + 4.5);
+      doc.text(row[2], 138.6, y + 4.5);
       y += 6;
     });
 

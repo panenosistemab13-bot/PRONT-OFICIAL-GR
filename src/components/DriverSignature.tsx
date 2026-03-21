@@ -21,7 +21,6 @@ import { Contract } from '../types';
 import { supabase } from '../services/supabase';
 import VisualizadorDeMapa from './VisualizadorDeMapa';
 import { LOGO_3_CORACOES } from '../constants';
-import { WEB_CONTENT } from '../content';
 
 const CHECKLIST_ITEMS = [
   "O VEÍCULO APRESENTA-SE LIMPO E EM BOAS CONDIÇÕES DE ACESSO AO DEPÓSITO.",
@@ -78,30 +77,9 @@ export const DriverSignature: React.FC = () => {
         if (error) throw error;
 
         if (data && data.dados) {
-          const contractData = typeof data.dados === 'string' ? JSON.parse(data.dados) : data.dados;
-          
-          // Se não tiver trajeto ou paradas, busca na rotas_mestres
-          if (!contractData.trajeto || !contractData.paradas_proibidas) {
-            try {
-              const { data: routeData } = await supabase
-                .from('rotas_mestres')
-                .select('itinerario, paradas_proibidas')
-                .ilike('destino', `%${contractData.destino}%`)
-                .limit(1)
-                .single();
-              
-              if (routeData) {
-                contractData.trajeto = contractData.trajeto || routeData.itinerario;
-                contractData.paradas_proibidas = contractData.paradas_proibidas || routeData.paradas_proibidas;
-              }
-            } catch (err) {
-              console.warn("Rota mestre não encontrada para o destino:", contractData.destino);
-            }
-          }
-
           setContract({
             id: data.id,
-            data: contractData,
+            data: typeof data.dados === 'string' ? JSON.parse(data.dados) : data.dados,
             signature: data.signature,
             signed_at: data.signed_at,
             created_at: data.created_at,
@@ -303,8 +281,8 @@ export const DriverSignature: React.FC = () => {
                   referrerPolicy="no-referrer"
                 />
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900 uppercase tracking-tight">{WEB_CONTENT.termo.titulo}</h2>
-                  <p className="text-slate-400 text-sm font-medium">{WEB_CONTENT.termo.subtitulo}</p>
+                  <h2 className="text-2xl font-bold text-slate-900 uppercase tracking-tight">TERMO DE RESPONSABILIDADE GR</h2>
+                  <p className="text-slate-400 text-sm font-medium">Normas de Gerenciamento de Risco - Três Corações Alimentos S.A.</p>
                 </div>
               </div>
 
@@ -316,11 +294,21 @@ export const DriverSignature: React.FC = () => {
                     </p>
                   ) : (
                     <>
-                      {WEB_CONTENT.termo.corpo.map((paragrafo, idx) => (
-                        <p key={idx} className={idx === WEB_CONTENT.termo.corpo.length - 1 ? "font-medium" : ""}>
-                          {paragrafo}
-                        </p>
-                      ))}
+                      <p>
+                        Declaro para os devidos fins, que fui contratado(a) pela transportadora, cujos dados seguem abaixo, para efetuar o transporte de carga do embarcador <span className="font-bold text-slate-800">TRÊS CORAÇÕES ALIMENTOS S.A., CAFÉ TRÊS CORAÇÕES S.A.</span>
+                      </p>
+                      <p>
+                        Estou ciente quanto às normas e procedimentos descritos nos itens a seguir. Confirmo que li e compreendi todas as regras repassadas quanto ao Gerenciamento de Riscos e me comprometo a cumpri-las em sua totalidade.
+                      </p>
+                      <p>
+                        Comprometo-me a entregar a carga ao destinatário, em iguais condições em que recebi. Além de, no decorrer do percurso, colher carimbo e assinatura em todos os Postos Fiscais.
+                      </p>
+                      <p>
+                        Estou ciente que, em caso de descumprimento das normas indicadas neste documento, poderei ser responsabilizado civil e criminalmente pelos danos causados à carga em caso de sinistro, estando eu em desacordo com as regras impostas a mim. Dessa forma, fica a critério do embarcador me bloquear ou não para carregamento através da Central de Gerenciamento de Riscos.
+                      </p>
+                      <p className="font-medium">
+                        Também estou ciente de que o veículo não pode ser retirado do local de descarga e/ou estacionamento sem autorização da Logística da Filial.
+                      </p>
                     </>
                   )}
                 </div>
@@ -356,19 +344,7 @@ export const DriverSignature: React.FC = () => {
                       <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Carreta II</p>
                       <p className="text-sm font-bold text-slate-700">{contract.data.carreta2 || '-'}</p>
                     </div>
-                    <div>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Modelo Cavalo</p>
-                      <p className={`text-sm font-bold ${(contract.data.modelo_cavalo || '').toUpperCase().includes('TRUCADO') ? 'text-red-600' : 'text-slate-700'}`}>
-                        {contract.data.modelo_cavalo || '-'}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Modelo Carreta</p>
-                      <p className={`text-sm font-bold ${(contract.data.modelo_carreta || '').toUpperCase().includes('RODOTREM BAÚ') ? 'text-red-600' : 'text-slate-700'}`}>
-                        {contract.data.modelo_carreta || '-'}
-                      </p>
-                    </div>
-                    <div>
+                    <div className="md:col-span-2">
                       <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Tecnologia</p>
                       <p className={`text-sm font-bold ${(contract.data.tecnologia || '').toUpperCase().includes('SASCAR') ? 'text-red-600' : 'text-slate-700'}`}>
                         {contract.data.tecnologia || '-'}
@@ -385,21 +361,28 @@ export const DriverSignature: React.FC = () => {
                 <div className="mt-8 space-y-4">
                   <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">Regras de Ouro (21 Itens)</h4>
                   <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 text-[11px] text-slate-600 leading-relaxed">
-                    {WEB_CONTENT.termo.regras.map((regra, idx) => {
-                      // Highlight bold parts
-                      const parts = regra.split(/(“[^”]+”|\*\*[^*]+\*\*|É proibido[^,;]+|Não conceder carona)/g);
-                      return (
-                        <p key={idx}>
-                          {parts.map((part, pIdx) => {
-                            if (part && (part.startsWith('“') || part.startsWith('**') || part.startsWith('É proibido') || part === 'Não conceder carona')) {
-                              return <strong key={pIdx} className="text-slate-900">{part.replace(/\*\*/g, '')}</strong>;
-                            }
-                            return part;
-                          })}
-                        </p>
-                      );
-                    })}
-                    <p className="font-bold text-slate-900 mt-4">{WEB_CONTENT.termo.rodape}</p>
+                    <p>1. Ao informar início de viagem, deverá aguardar a mensagem <strong>“Ok, Liberado”</strong> que será enviada pela Central de Monitoramento 3corações, autorizando o prosseguimento da viagem;</p>
+                    <p>2. Informar todas as paradas e reinícios durante a viagem;</p>
+                    <p>3. Ao chegar no local de descarga, enviar macro <strong>“CHEGADA NO CLIENTE”</strong>, e enviando a macro de <strong>“FIM DE VIAGEM”</strong>, somente quando a descarga for finalizada;</p>
+                    <p>4. <strong>É proibido parar antes dos 150 km iniciais</strong>, exceto paradas obrigatórias ou problema mecânico/elétrico;</p>
+                    <p>5. <strong>É proibido pernoite em residência;</strong></p>
+                    <p>6. Respeitar o horário de rodagem, no período de <strong>05h00min às 22h00min</strong>;</p>
+                    <p>7. O veículo será desbloqueado após o pernoite, somente mediante confirmação de senha de segurança do motorista, via teclado;</p>
+                    <p>8. Evitar pernoite sob cobertura, evitando perda de sinal da antena;</p>
+                    <p>9. <strong>Não conceder carona;</strong></p>
+                    <p>10. Seguir o trajeto predeterminado;</p>
+                    <p>11. Respeitar o limite de velocidade da via, não excedendo o limite de <strong>80km/h</strong>;</p>
+                    <p>12. Manter a central informada de todas as anormalidades durante o percurso, mantendo a comunicação, via macro, como também pelos telefones: <strong>Fixo (85) 4006.5522 (escolher a opção desejada); WhatsApp (85) 99198.2886 (apenas mensagem e áudio);</strong></p>
+                    <p>13. Dirigir preventivamente, evitando acidentes, preservando sua própria vida, a vida de terceiros e também carga do embarcador;</p>
+                    <p>14. Não oferecer, dar ou aceitar de quem quer que seja, tanto por conta própria ou através de terceiro, qualquer pagamento, doação, compensação, vantagens ou benefícios de qualquer natureza que constituam prática ilegal ou prática de corrupção sob as leis de qualquer país;</p>
+                    <p>15. <strong>(Proibido passagem por Sergipe);</strong></p>
+                    <p>16. Destino Rio de Janeiro: Agendar escolta com 2 horas de antecedência do ponto de encontro, no pedágio desativado em Duque de Caxias/RJ, evitar rodar depois das 17 horas dentro da área urbana da cidade. Caso necessário, o pernoite acontecerá mais cedo na cidade de Três Rios/RJ (Posto Ipirangão);</p>
+                    <p>17. Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e Frango Assado;</p>
+                    <p>18. Manter o veículo travado e com os vidros fechados durante todo o percurso;</p>
+                    <p>19. Não realizar paradas em locais não autorizados ou sem infraestrutura de segurança;</p>
+                    <p>20. Em caso de suspeita de acompanhamento, acionar imediatamente o botão de pânico;</p>
+                    <p>21. Realizar o teste de teclado/comunicação antes de iniciar a viagem.</p>
+                    <p className="font-bold text-slate-900 mt-4">Caso tenha dúvidas, contate nossa central de monitoramento pelos telefones acima informados.</p>
                   </div>
                 </div>
 
@@ -448,15 +431,26 @@ export const DriverSignature: React.FC = () => {
                   
                   <div className="mt-6 space-y-4">
                     <div className="flex items-center gap-2 border-b border-indigo-100 pb-2">
+                      <MapPin className="w-4 h-4 text-indigo-500" />
+                      <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-widest">Cidades do Itinerário</h4>
+                    </div>
+                    <div className="bg-white border border-indigo-100 rounded-xl p-4">
+                      <p className="text-xs text-slate-600 leading-relaxed italic">
+                        {contract.data.trajeto || 'Santa Luzia, Carmópolis de Minas, Pouso Alegre, Cambuí, Extrema, Atibaia, Campinas, Sumaré.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 space-y-4">
+                    <div className="flex items-center gap-2 border-b border-indigo-100 pb-2">
                       <Truck className="w-4 h-4 text-indigo-500" />
-                      <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-widest">Plano de Rota Detalhado</h4>
+                      <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-widest">Mapa do Trajeto</h4>
                     </div>
                     
                     {contract.data.destino ? (
                       <VisualizadorDeMapa 
                         destination={contract.data.destino} 
                         itinerary={contract.data.trajeto} 
-                        forbiddenStops={contract.data.paradas_proibidas}
                         mapa_arquivo={contract.data.mapa_arquivo}
                         driverName={contract.data.motorista}
                         driverCpf={contract.data.cpf}
@@ -468,6 +462,40 @@ export const DriverSignature: React.FC = () => {
                         <p className="text-xs font-bold text-red-700">Destino não informado para carregar o mapa.</p>
                       </div>
                     )}
+                  </div>
+
+                  <div className="mt-8 space-y-3">
+                    <div className="flex items-center gap-2 border-b border-red-100 pb-2">
+                      <AlertCircle className="w-4 h-4 text-red-500" />
+                      <h4 className="text-xs font-bold text-red-900 uppercase tracking-widest">Paradas Proibidas</h4>
+                    </div>
+                    <div className="bg-red-50 border border-red-100 rounded-2xl p-6">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-[10px] text-red-700 font-bold uppercase tracking-tight">
+                        <div>• Cambuí/MG</div>
+                        <div>• Campanha/MG</div>
+                        <div>• Embu das Artes/SP</div>
+                        <div>• Itatiaiuçu/MG</div>
+                        <div>• Carmópolis de Minas/MG</div>
+                        <div>• Guarulhos/SP</div>
+                        <div>• Itaguara/MG</div>
+                        <div>• Igarapé/MG</div>
+                        <div>• Itapecerica da Serra/SP</div>
+                        <div>• Extrema/MG</div>
+                        <div>• Itapeva/MG</div>
+                        <div>• Miracatu/SP</div>
+                        <div>• Pouso Alegre/MG</div>
+                        <div>• Varginha/MG</div>
+                        <div>• Três Corações/MG</div>
+                      </div>
+                      <div className="mt-6 pt-4 border-t border-red-200 text-center">
+                        <p className="text-xs font-bold text-red-800 uppercase tracking-tight">
+                          Proibido Parada entre as cidades de Joinville/SC até Palhoça/SC
+                        </p>
+                        <p className="text-[9px] text-red-600 mt-1">
+                          Trechos proibidos em Santa Catarina e áreas urbanas de alto risco.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

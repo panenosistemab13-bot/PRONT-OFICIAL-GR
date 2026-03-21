@@ -40,7 +40,6 @@ export interface DriverData {
   valido?: string;
   dias?: string;
   mapa_arquivo?: string;
-  paradas_proibidas?: string;
 }
 
 export interface Contract {
