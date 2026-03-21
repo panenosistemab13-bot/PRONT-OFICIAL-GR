@@ -21,6 +21,7 @@ import { Contract } from '../types';
 import { supabase } from '../services/supabase';
 import VisualizadorDeMapa from './VisualizadorDeMapa';
 import { LOGO_3_CORACOES } from '../constants';
+import { getCitiesForDestination } from '../utils/itineraryUtils';
 
 const CHECKLIST_ITEMS = [
   "O VEÍCULO APRESENTA-SE LIMPO E EM BOAS CONDIÇÕES DE ACESSO AO DEPÓSITO.",
@@ -436,7 +437,7 @@ export const DriverSignature: React.FC = () => {
                     </div>
                     <div className="bg-white border border-indigo-100 rounded-xl p-4">
                       <p className="text-xs text-slate-600 leading-relaxed italic">
-                        {contract.data.trajeto || 'Santa Luzia, Carmópolis de Minas, Pouso Alegre, Cambuí, Extrema, Atibaia, Campinas, Sumaré.'}
+                        {contract.data.trajeto || getCitiesForDestination(contract.data.destino || '', contract.data.origem || '').join(', ')}
                       </p>
                     </div>
                   </div>

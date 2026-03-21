@@ -45,6 +45,7 @@ import {
 } from 'recharts';
 import { QRCodeSVG, QRCodeCanvas } from 'qrcode.react';
 import jsPDF from 'jspdf';
+import { getCitiesForDestination } from '../utils/itineraryUtils';
 
 const CHECKLIST_ITEMS = [
   "O VEÍCULO APRESENTA-SE LIMPO E EM BOAS CONDIÇÕES DE ACESSO AO DEPÓSITO.",
@@ -242,12 +243,14 @@ export const AdminDashboard: React.FC = () => {
       };
 
       // Passo 1: Criar o "Termo Padrão" no Código
-      const termoTemplate = `
-TERMO DE RESPONSABILIDADE E RETIRADA
-Eu, {nome_motorista}, portador do CPF {cpf} e CNH {cnh}, declaro que recebi o veículo 
-de placa {placa} em perfeitas condições operacionais na data de {data}.
-Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
-`;
+      const termoTemplate = `Declaro para os devidos fins, que fui contratado(a) pela transportadora, cujos dados seguem abaixo, para efetuar o transporte de carga do embarcador TRÊS CORAÇÕES ALIMENTOS S.A., CAFÉ TRÊS CORAÇÕES S.A.
+
+Estou ciente quanto às normas e procedimentos descritos nos itens a seguir. Confirmo que li e compreendi todas as regras repassadas quanto ao Gerenciamento de Riscos e me comprometo a cumpri-las em sua totalidade.
+Comprometo-me a entregar a carga ao destinatário, em iguais condições em que recebi. Além de, no decorrer do percurso, colher carimbo e assinatura em todos os Postos Fiscais.
+
+Estou ciente que, em caso de descumprimento das normas indicadas neste documento, poderei ser responsabilizado civil e criminalmente pelos danos causados à carga em caso de sinistro, estando eu em desacordo com as regras impostas a mim. Dessa forma, fica a critério do embarcador me bloquear ou não para carregamento através da Central de Gerenciamento de Riscos.
+
+Também estou ciente de que o veículo não pode ser retirado do local de descarga e/ou estacionamento sem autorização da Logística da Filial.`;
 
       // Preencher os dados automaticamente usando .replace()
       const termoGerado = termoTemplate
@@ -1057,7 +1060,7 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     const trajetoRaw = contract.data.trajeto || "";
     const cities = trajetoRaw 
       ? trajetoRaw.split(/[;|\n]+/).map(city => `» ${city.trim()}`).filter(city => city.length > 2)
-      : [`» ${origem}`, "» Carmópolis de Minas/MG", "» Pouso Alegre/MG", "» Bragança Paulista/SP", "» Jarinu/SP", "» Juquitiba/SP", "» São José dos Pinhais/PR", "» Joinville/SC", `» ${destino}`];
+      : getCitiesForDestination(destino, origem).map(city => `» ${city}`);
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(6.5);
@@ -1508,7 +1511,7 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Trajeto</span>
                           <div className="flex items-center gap-2">
                             <MapPin className="w-3 h-3 text-slate-400" />
-                            <p className="text-sm font-semibold text-slate-700 truncate">{parsedData.trajeto || parsedData.destino || '-'}</p>
+                            <p className="text-sm font-semibold text-slate-700 truncate">{parsedData.trajeto || getCitiesForDestination(parsedData.destino || '', parsedData.origem || '').join(', ')}</p>
                           </div>
                         </div>
                         <div className="space-y-1">

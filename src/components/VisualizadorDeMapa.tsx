@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/supabase';
 
 import { LOGO_3_CORACOES } from '../constants';
+import { getCitiesForDestination } from '../utils/itineraryUtils';
 
 interface VisualizadorDeMapaProps {
   destination: string;
@@ -80,7 +81,7 @@ const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({
   // Processar o itinerário
   const cities = itinerary 
     ? itinerary.split(/[;|\n]+/).map(city => city.trim()).filter(city => city.length > 0)
-    : [];
+    : getCitiesForDestination(destination);
 
   // Componente de Marca d'Água Repetida
   const WatermarkOverlay = () => {
