@@ -1334,7 +1334,6 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
                     </div>
                   )}
                 </div>
-                <span className="text-xs font-medium text-slate-400">Motoristas ativos</span>
               </div>
             )}
           </header>
