@@ -5,12 +5,9 @@ import { DriverSignature } from './components/DriverSignature';
 import { Login } from './components/Login';
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('assinagr_auth') === 'true';
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const handleLogin = () => {
-    localStorage.setItem('assinagr_auth', 'true');
     setIsAuthenticated(true);
   };
 
