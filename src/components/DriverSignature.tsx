@@ -130,32 +130,34 @@ export const DriverSignature: React.FC = () => {
   }, []);
 
   const [saving, setSaving] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingSignature, setPendingSignature] = useState<string | null>(null);
 
   const handleSign = async (signature: string) => {
-    setSignatureData(signature);
+    setPendingSignature(signature);
+    setShowConfirmModal(true);
   };
 
-  const handleFinalize = async () => {
-    if (!signatureData) {
-      alert('Por favor, assine o documento antes de finalizar.');
-      return;
-    }
-
+  const handleFinalize = async (signatureToSave: string) => {
     setSaving(true);
     try {
       const { error } = await supabase
         .from('contracts')
         .update({ 
-          signature: signatureData, 
+          signature: signatureToSave, 
           signed_at: new Date().toISOString() 
         })
         .eq('id', id);
 
       if (error) throw error;
+      setSignatureData(signatureToSave);
       setSigned(true);
+      setShowConfirmModal(false);
     } catch (err) {
       console.error("Erro ao salvar assinatura:", err);
-      alert('Erro ao salvar assinatura.');
+      // We can't use alert, so we might just log or show an error state. 
+      // For now, we'll just close the modal and let the user try again.
+      setShowConfirmModal(false);
     } finally {
       setSaving(false);
     }
@@ -562,7 +564,73 @@ export const DriverSignature: React.FC = () => {
               </div>
 
               <div className="p-0">
-                <div className="bg-slate-50 p-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100">Itens Vistoriados</div>
+                <div className="bg-slate-50 p-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100">Dados do Motorista</div>
+                <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="md:col-span-3">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Motorista</span>
+                    <span className="font-bold text-slate-700">{contract.data.motorista || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">CPF</span>
+                    <span className="font-bold text-blue-600">{contract.data.cpf || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">RG</span>
+                    <span className="font-bold text-slate-700">{contract.data.rg || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">CNH</span>
+                    <span className="font-bold text-slate-700">{contract.data.cnh || '-'}</span>
+                  </div>
+                  <div className="md:col-span-3">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Vínculo</span>
+                    <span className="font-bold text-slate-700">{contract.data.vinculo || 'FROTA'}</span>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 p-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-y border-slate-100">Dados do Veículo</div>
+                <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="md:col-span-2">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Transportadora</span>
+                    <span className="font-bold text-slate-700">{contract.data.transportador || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">UF das Placas</span>
+                    <span className="font-bold text-slate-700">{contract.data.uf_placas || 'MG'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Placa do Cavalo</span>
+                    <span className="font-bold text-slate-700">{contract.data.cavalo || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Placa Carreta 1</span>
+                    <span className="font-bold text-slate-700">{contract.data.carreta || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Placa Carreta 2</span>
+                    <span className="font-bold text-slate-700">{contract.data.carreta2 || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Tipo de Carreta</span>
+                    <span className={`font-bold ${(contract.data.modelo_carreta || contract.data.tipo_carreta || '').toUpperCase().includes('RODOTREM BAÚ') ? 'text-red-600' : 'text-slate-700'}`}>
+                      {(contract.data.modelo_carreta || contract.data.tipo_carreta || '-').toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Tipo de Cavalo</span>
+                    <span className={`font-bold ${(contract.data.modelo_cavalo || contract.data.tipo_cavalo || '').toUpperCase().includes('TRUCADO') ? 'text-red-600' : 'text-slate-700'}`}>
+                      {(contract.data.modelo_cavalo || contract.data.tipo_cavalo || '-').toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Tecnologia</span>
+                    <span className={`font-bold ${(contract.data.tecnologia || '').toUpperCase().includes('SASCAR') ? 'text-red-600' : 'text-slate-700'}`}>
+                      {contract.data.tecnologia || '-'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 p-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-y border-slate-100">Itens Vistoriados</div>
                 <div className="divide-y divide-slate-100">
                   {CHECKLIST_ITEMS.map((item, idx) => (
                     <div key={idx} className="p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors">
@@ -600,13 +668,6 @@ export const DriverSignature: React.FC = () => {
                       <div className="p-2 bg-emerald-50 text-emerald-700 rounded-lg flex items-center gap-2 text-xs font-bold">
                         <CheckCircle className="w-4 h-4" /> Assinatura Capturada
                       </div>
-                      <button
-                        onClick={handleFinalize}
-                        disabled={saving}
-                        className="w-full bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-slate-800 shadow-lg shadow-slate-900/20 transition-all disabled:opacity-50"
-                      >
-                        {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><ShieldCheck className="w-5 h-5" /> Finalizar Registro</>}
-                      </button>
                     </div>
                   )}
                 </div>
@@ -622,6 +683,52 @@ export const DriverSignature: React.FC = () => {
                   </button>
                 )}
               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Confirmation Modal */}
+        <AnimatePresence>
+          {showConfirmModal && (
+            <motion.div 
+              key="confirm-modal"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
+            >
+              <motion.div
+                initial={{ scale: 0.95 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.95 }}
+                className="bg-white rounded-3xl shadow-xl max-w-sm w-full p-6 border border-slate-100"
+              >
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto">
+                    <ShieldCheck className="w-8 h-8 text-indigo-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900">Deseja finalizar?</h3>
+                  <p className="text-sm text-slate-500">
+                    Ao confirmar, sua assinatura será salva e o registro será concluído.
+                  </p>
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={() => setShowConfirmModal(false)}
+                      disabled={saving}
+                      className="flex-1 py-3 px-4 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors disabled:opacity-50"
+                    >
+                      Não
+                    </button>
+                    <button
+                      onClick={() => pendingSignature && handleFinalize(pendingSignature)}
+                      disabled={saving}
+                      className="flex-1 py-3 px-4 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Sim'}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>

@@ -26,7 +26,8 @@ import {
   ChevronDown,
   ChevronUp,
   Info,
-  Coffee
+  Coffee,
+  Clock
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { DriverData, Contract } from '../types';
@@ -1540,11 +1541,17 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
                       </button>
                     </div>
 
-                    <div className="flex justify-center p-4 bg-white border rounded-xl">
+                    <div className="flex justify-center p-4 bg-white border rounded-xl mb-4">
                       {/* Aqui usamos o componente que você já importou */}
                       <QRCodeSVG value={generatedLink} size={150} />
                     </div>
-                    <p className="text-[10px] text-center text-gray-400 mt-2 italic">Link pronto para envio.</p>
+                    
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm text-slate-700 space-y-3">
+                      <p>Olá! Informamos que a vistoria técnica do seu veículo foi concluída com sucesso (Tudo OK). ✅</p>
+                      <p>Para prosseguir, por favor, acesse o link abaixo para ler os termos de responsabilidade e realizar a sua assinatura digital.</p>
+                      <p>Link: <a href={generatedLink} target="_blank" rel="noopener noreferrer" className="text-indigo-600 font-medium break-all">{generatedLink}</a></p>
+                      <p className="font-medium">Importante: Após a sua assinatura, nosso sistema validará a disponibilidade final do veículo para liberação.</p>
+                    </div>
                   </div>
                 )}
               </motion.div>
@@ -1750,9 +1757,15 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
                                     </div>
                                   </td>
                                   <td className="px-6 py-4">
-                                    <div className="flex items-center gap-2 text-sm text-slate-600">
-                                      <Calendar className="w-4 h-4 text-slate-300" />
-                                      {new Date(contract.created_at).toLocaleDateString('pt-BR')}
+                                    <div className="flex flex-col gap-1 text-sm text-slate-600">
+                                      <div className="flex items-center gap-2">
+                                        <Calendar className="w-4 h-4 text-slate-300" />
+                                        {new Date(contract.created_at).toLocaleDateString('pt-BR')}
+                                      </div>
+                                      <div className="flex items-center gap-2 text-xs text-slate-400">
+                                        <Clock className="w-3.5 h-3.5" />
+                                        {new Date(contract.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                      </div>
                                     </div>
                                   </td>
                                   <td className="px-6 py-4">
@@ -1946,9 +1959,15 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
                               </div>
 
                               <div className="flex items-center justify-between text-[10px] text-slate-500">
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="w-3 h-3" />
-                                  {new Date(contract.created_at).toLocaleDateString('pt-BR')}
+                                <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="w-3 h-3" />
+                                    {new Date(contract.created_at).toLocaleDateString('pt-BR')}
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    {new Date(contract.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                  </div>
                                 </div>
                                 <div className="flex items-center gap-0.5 text-indigo-600 font-medium">
                                   {expandedRow === contract.id ? 'Menos' : 'Mais'}
