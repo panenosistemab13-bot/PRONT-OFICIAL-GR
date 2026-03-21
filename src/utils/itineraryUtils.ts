@@ -87,3 +87,35 @@ export const getCitiesForDestination = (dest: string, orig: string = "Santa Luzi
   // Default fallback if no match
   return [orig, "Carmópolis de Minas/MG", "Pouso Alegre/MG", "Bragança Paulista/SP", "Jarinu/SP", "Juquitiba/SP", "São José dos Pinhais/PR", "Joinville/SC", dest];
 };
+
+export const getForbiddenStopsForDestination = (dest: string): string[] => {
+  const d = dest.toUpperCase();
+  if (d.includes("RIO DE JANEIRO")) {
+    return [
+      "Contagem/MG",
+      "Betim/MG",
+      "Barbacena/MG",
+      "Santos Dumont/MG",
+      "Juiz de Fora/MG",
+      "Petrópolis/RJ"
+    ];
+  }
+  // Default forbidden stops
+  return [
+    "Cambuí/MG",
+    "Campanha/MG",
+    "Embu das Artes/SP",
+    "Itatiaiuçu/MG",
+    "Carmópolis de Minas/MG",
+    "Guarulhos/SP (exceto P. Sakamoto)",
+    "Itaguara/MG",
+    "Igarapé/MG",
+    "Itapecerica da Serra/SP",
+    "Extrema/MG",
+    "Itapeva/MG",
+    "Miracatu/SP",
+    "Pouso Alegre/MG",
+    "Varginha/MG",
+    "Três Corações/MG"
+  ];
+};

@@ -21,7 +21,7 @@ import { Contract } from '../types';
 import { supabase } from '../services/supabase';
 import VisualizadorDeMapa from './VisualizadorDeMapa';
 import { LOGO_3_CORACOES } from '../constants';
-import { getCitiesForDestination } from '../utils/itineraryUtils';
+import { getCitiesForDestination, getForbiddenStopsForDestination } from '../utils/itineraryUtils';
 
 const CHECKLIST_ITEMS = [
   "O VEÍCULO APRESENTA-SE LIMPO E EM BOAS CONDIÇÕES DE ACESSO AO DEPÓSITO.",
@@ -494,21 +494,9 @@ export const DriverSignature: React.FC = () => {
                     </div>
                     <div className="bg-red-50 border border-red-100 rounded-2xl p-6">
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-[10px] text-red-700 font-bold uppercase tracking-tight">
-                        <div>• Cambuí/MG</div>
-                        <div>• Campanha/MG</div>
-                        <div>• Embu das Artes/SP</div>
-                        <div>• Itatiaiuçu/MG</div>
-                        <div>• Carmópolis de Minas/MG</div>
-                        <div>• Guarulhos/SP</div>
-                        <div>• Itaguara/MG</div>
-                        <div>• Igarapé/MG</div>
-                        <div>• Itapecerica da Serra/SP</div>
-                        <div>• Extrema/MG</div>
-                        <div>• Itapeva/MG</div>
-                        <div>• Miracatu/SP</div>
-                        <div>• Pouso Alegre/MG</div>
-                        <div>• Varginha/MG</div>
-                        <div>• Três Corações/MG</div>
+                        {getForbiddenStopsForDestination(contract.data.destino || '').map((stop, i) => (
+                          <div key={i}>• {stop}</div>
+                        ))}
                       </div>
                       <div className="mt-6 pt-4 border-t border-red-200 text-center">
                         <p className="text-xs font-bold text-red-800 uppercase tracking-tight">

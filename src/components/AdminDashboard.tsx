@@ -46,7 +46,7 @@ import {
 } from 'recharts';
 import { QRCodeSVG, QRCodeCanvas } from 'qrcode.react';
 import jsPDF from 'jspdf';
-import { getCitiesForDestination } from '../utils/itineraryUtils';
+import { getCitiesForDestination, getForbiddenStopsForDestination } from '../utils/itineraryUtils';
 
 const CHECKLIST_ITEMS = [
   "O VEÍCULO APRESENTA-SE LIMPO E EM BOAS CONDIÇÕES DE ACESSO AO DEPÓSITO.",
@@ -1089,13 +1089,15 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     doc.text("PARADAS PROIBIDAS", pageWidth / 2, y + 5, { align: 'center' });
     y += 7;
 
-    const forbiddenStops = [
-      ["Cambuí/MG", "Campanha/MG", "Embu das Artes-SP"],
-      ["Itatiaiuçu-MG", "Carmópolis de Minas-MG", "Guarulhos-SP (exceto P. Sakamoto)"],
-      ["Itaquara-MG", "Igarapé-MG", "Itapecerica da Serra-SP"],
-      ["Extrema-MG", "Itapeva-MG", "Miracatu-SP"],
-      ["Pouso Alegre-MG", "Varginha-MG", ""]
-    ];
+    const rawForbiddenStops = getForbiddenStopsForDestination(destino);
+    const forbiddenStops = [];
+    for (let i = 0; i < rawForbiddenStops.length; i += 3) {
+      forbiddenStops.push([
+        rawForbiddenStops[i] || "",
+        rawForbiddenStops[i + 1] || "",
+        rawForbiddenStops[i + 2] || ""
+      ]);
+    }
 
     doc.setFontSize(7);
     forbiddenStops.forEach(row => {
