@@ -1341,7 +1341,8 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
                 exit={{ opacity: 0, y: -20 }}
                 className="space-y-6"
               >
-                {/* Stats Cards */}
+                {/* Stats Cards - Ocultos conforme solicitado */}
+                {/* 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
                     <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center">
@@ -1380,6 +1381,7 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
                     </div>
                   </div>
                 </div>
+                */}
 
                 {/* Charts */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
