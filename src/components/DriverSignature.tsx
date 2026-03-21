@@ -21,6 +21,7 @@ import { Contract } from '../types';
 import { supabase } from '../services/supabase';
 import VisualizadorDeMapa from './VisualizadorDeMapa';
 import { LOGO_3_CORACOES } from '../constants';
+import { WEB_CONTENT } from '../content';
 
 const CHECKLIST_ITEMS = [
   "O VEÍCULO APRESENTA-SE LIMPO E EM BOAS CONDIÇÕES DE ACESSO AO DEPÓSITO.",
@@ -294,21 +295,11 @@ export const DriverSignature: React.FC = () => {
                     </p>
                   ) : (
                     <>
-                      <p>
-                        Declaro para os devidos fins, que fui contratado(a) pela transportadora, cujos dados seguem abaixo, para efetuar o transporte de carga do embarcador <span className="font-bold text-slate-800">TRÊS CORAÇÕES ALIMENTOS S.A., CAFÉ TRÊS CORAÇÕES S.A.</span>
-                      </p>
-                      <p>
-                        Estou ciente quanto às normas e procedimentos descritos nos itens a seguir. Confirmo que li e compreendi todas as regras repassadas quanto ao Gerenciamento de Riscos e me comprometo a cumpri-las em sua totalidade.
-                      </p>
-                      <p>
-                        Comprometo-me a entregar a carga ao destinatário, em iguais condições em que recebi. Além de, no decorrer do percurso, colher carimbo e assinatura em todos os Postos Fiscais.
-                      </p>
-                      <p>
-                        Estou ciente que, em caso de descumprimento das normas indicadas neste documento, poderei ser responsabilizado civil e criminalmente pelos danos causados à carga em caso de sinistro, estando eu em desacordo com as regras impostas a mim. Dessa forma, fica a critério do embarcador me bloquear ou não para carregamento através da Central de Gerenciamento de Riscos.
-                      </p>
-                      <p className="font-medium">
-                        Também estou ciente de que o veículo não pode ser retirado do local de descarga e/ou estacionamento sem autorização da Logística da Filial.
-                      </p>
+                      {WEB_CONTENT.termo.corpo.map((paragrafo, idx) => (
+                        <p key={idx} className={idx === WEB_CONTENT.termo.corpo.length - 1 ? "font-medium" : ""}>
+                          {paragrafo}
+                        </p>
+                      ))}
                     </>
                   )}
                 </div>
@@ -344,7 +335,19 @@ export const DriverSignature: React.FC = () => {
                       <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Carreta II</p>
                       <p className="text-sm font-bold text-slate-700">{contract.data.carreta2 || '-'}</p>
                     </div>
-                    <div className="md:col-span-2">
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Modelo Cavalo</p>
+                      <p className={`text-sm font-bold ${(contract.data.modelo_cavalo || '').toUpperCase().includes('TRUCADO') ? 'text-red-600' : 'text-slate-700'}`}>
+                        {contract.data.modelo_cavalo || '-'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Modelo Carreta</p>
+                      <p className={`text-sm font-bold ${(contract.data.modelo_carreta || '').toUpperCase().includes('RODOTREM BAÚ') ? 'text-red-600' : 'text-slate-700'}`}>
+                        {contract.data.modelo_carreta || '-'}
+                      </p>
+                    </div>
+                    <div>
                       <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Tecnologia</p>
                       <p className={`text-sm font-bold ${(contract.data.tecnologia || '').toUpperCase().includes('SASCAR') ? 'text-red-600' : 'text-slate-700'}`}>
                         {contract.data.tecnologia || '-'}
@@ -361,28 +364,21 @@ export const DriverSignature: React.FC = () => {
                 <div className="mt-8 space-y-4">
                   <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">Regras de Ouro (21 Itens)</h4>
                   <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 text-[11px] text-slate-600 leading-relaxed">
-                    <p>1. Ao informar início de viagem, deverá aguardar a mensagem <strong>“Ok, Liberado”</strong> que será enviada pela Central de Monitoramento 3corações, autorizando o prosseguimento da viagem;</p>
-                    <p>2. Informar todas as paradas e reinícios durante a viagem;</p>
-                    <p>3. Ao chegar no local de descarga, enviar macro <strong>“CHEGADA NO CLIENTE”</strong>, e enviando a macro de <strong>“FIM DE VIAGEM”</strong>, somente quando a descarga for finalizada;</p>
-                    <p>4. <strong>É proibido parar antes dos 150 km iniciais</strong>, exceto paradas obrigatórias ou problema mecânico/elétrico;</p>
-                    <p>5. <strong>É proibido pernoite em residência;</strong></p>
-                    <p>6. Respeitar o horário de rodagem, no período de <strong>05h00min às 22h00min</strong>;</p>
-                    <p>7. O veículo será desbloqueado após o pernoite, somente mediante confirmação de senha de segurança do motorista, via teclado;</p>
-                    <p>8. Evitar pernoite sob cobertura, evitando perda de sinal da antena;</p>
-                    <p>9. <strong>Não conceder carona;</strong></p>
-                    <p>10. Seguir o trajeto predeterminado;</p>
-                    <p>11. Respeitar o limite de velocidade da via, não excedendo o limite de <strong>80km/h</strong>;</p>
-                    <p>12. Manter a central informada de todas as anormalidades durante o percurso, mantendo a comunicação, via macro, como também pelos telefones: <strong>Fixo (85) 4006.5522 (escolher a opção desejada); WhatsApp (85) 99198.2886 (apenas mensagem e áudio);</strong></p>
-                    <p>13. Dirigir preventivamente, evitando acidentes, preservando sua própria vida, a vida de terceiros e também carga do embarcador;</p>
-                    <p>14. Não oferecer, dar ou aceitar de quem quer que seja, tanto por conta própria ou através de terceiro, qualquer pagamento, doação, compensação, vantagens ou benefícios de qualquer natureza que constituam prática ilegal ou prática de corrupção sob as leis de qualquer país;</p>
-                    <p>15. <strong>(Proibido passagem por Sergipe);</strong></p>
-                    <p>16. Destino Rio de Janeiro: Agendar escolta com 2 horas de antecedência do ponto de encontro, no pedágio desativado em Duque de Caxias/RJ, evitar rodar depois das 17 horas dentro da área urbana da cidade. Caso necessário, o pernoite acontecerá mais cedo na cidade de Três Rios/RJ (Posto Ipirangão);</p>
-                    <p>17. Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e Frango Assado;</p>
-                    <p>18. Manter o veículo travado e com os vidros fechados durante todo o percurso;</p>
-                    <p>19. Não realizar paradas em locais não autorizados ou sem infraestrutura de segurança;</p>
-                    <p>20. Em caso de suspeita de acompanhamento, acionar imediatamente o botão de pânico;</p>
-                    <p>21. Realizar o teste de teclado/comunicação antes de iniciar a viagem.</p>
-                    <p className="font-bold text-slate-900 mt-4">Caso tenha dúvidas, contate nossa central de monitoramento pelos telefones acima informados.</p>
+                    {WEB_CONTENT.termo.regras.map((regra, idx) => {
+                      // Highlight bold parts
+                      const parts = regra.split(/(“[^”]+”|\*\*[^*]+\*\*|É proibido[^,;]+|Não conceder carona)/g);
+                      return (
+                        <p key={idx}>
+                          {parts.map((part, pIdx) => {
+                            if (part && (part.startsWith('“') || part.startsWith('**') || part.startsWith('É proibido') || part === 'Não conceder carona')) {
+                              return <strong key={pIdx} className="text-slate-900">{part.replace(/\*\*/g, '')}</strong>;
+                            }
+                            return part;
+                          })}
+                        </p>
+                      );
+                    })}
+                    <p className="font-bold text-slate-900 mt-4">{WEB_CONTENT.termo.rodape}</p>
                   </div>
                 </div>
 

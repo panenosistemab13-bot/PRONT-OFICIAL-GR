@@ -1,4 +1,5 @@
 import { LOGO_3_CORACOES } from '../constants';
+import { PDF_CONTENT } from '../content';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -401,7 +402,7 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
     
     doc.setFontSize(7.5);
     doc.setFont("helvetica", "normal");
-    const introText = "Declaro para os devidos fins, que fui contratado(a) pela transportadora, cujos dados seguem abaixo, para efetuar o transporte de carga do embarcador TRÊS CORAÇÕES ALIMENTOS S.A., CAFÉ TRÊS CORAÇÕES S.A.\n\nEstou ciente quanto às normas e procedimentos descritos nos itens a seguir. Confirmo que li e compreendi todas as regras repassadas quanto ao Gerenciamento de Riscos e me comprometo a cumpri-las em sua totalidade.\nComprometo-me a entregar a carga ao destinatário, em iguais condições em que recebi. Além de, no decorrer do percurso, colher carimbo e assinatura em todos os Postos Fiscais.\n\nEstou ciente que, em caso de descumprimento das normas indicadas neste documento, poderei ser responsabilizado civil e criminalmente pelos danos causados à carga em caso de sinistro, estando eu em desacordo com as regras impostas a mim. Dessa forma, fica a critério do embarcador me bloquear ou não para carregamento através da Central de Gerenciamento de Riscos.\n\nTambém estou ciente de que o veículo não pode ser retirado do local de descarga e/ou estacionamento sem autorização da Logística da Filial.";
+    const introText = PDF_CONTENT.termo.corpo;
     const splitIntro = doc.splitTextToSize(introText, 170);
     doc.text(splitIntro, 20, y);
     y += (splitIntro.length * 3.2) + 6;
@@ -421,7 +422,7 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
 
     doc.setFont("helvetica", "bold");
     doc.text("Data:", col1, y);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("helvetica", "normal");
     doc.text(new Date(contract.created_at).toLocaleDateString('pt-BR'), col1 + 10, y);
 
     doc.setFont("helvetica", "bold");
@@ -432,92 +433,62 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
     doc.setTextColor(0, 0, 0);
 
     doc.setFont("helvetica", "bold");
-    doc.text("Transportadora:", col3, y);
-    doc.setFont("helvetica", "bold");
-    doc.text(String(contract.data.transportador || '-').substring(0, 25), col3 + 25, y);
+    doc.text("Vínculo:", col3, y);
+    doc.setFont("helvetica", "normal");
+    doc.text(contract.data.vinculo || 'FROTA', col3 + 15, y);
 
     y += 5;
     doc.setFont("helvetica", "bold");
     doc.text("Motorista:", col1, y);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("helvetica", "normal");
     doc.text(String(contract.data.motorista || '-').substring(0, 38), col1 + 16, y);
 
     doc.setFont("helvetica", "bold");
-    doc.text("Vínculo:", col2, y);
+    doc.text("Placa Cavalo:", col2, y);
+    doc.setFont("helvetica", "normal");
+    doc.text(contract.data.cavalo || '-', col2 + 22, y);
+
     doc.setFont("helvetica", "bold");
-    doc.text(contract.data.vinculo || '-', col2 + 14, y);
+    doc.text("Carreta I:", col3, y);
+    doc.setFont("helvetica", "normal");
+    doc.text(contract.data.carreta || '-', col3 + 16, y);
 
     y += 5;
     doc.setFont("helvetica", "bold");
-    doc.text("Placa Cavalo:", col1, y);
-    doc.setFont("helvetica", "bold");
-    doc.text(contract.data.cavalo || '-', col1 + 22, y);
+    doc.text("Modelo Cavalo:", col1, y);
+    const modeloCavalo = (contract.data.modelo_cavalo || '-').toUpperCase();
+    if (modeloCavalo.includes('TRUCADO')) {
+      doc.setTextColor(255, 0, 0);
+    }
+    doc.text(modeloCavalo, col1 + 25, y);
+    doc.setTextColor(0, 0, 0);
 
     doc.setFont("helvetica", "bold");
-    doc.text("Carreta I:", col2, y);
-    doc.setFont("helvetica", "bold");
-    doc.text(contract.data.carreta || '-', col2 + 16, y);
+    doc.text("Modelo Carreta:", col2, y);
+    const modeloCarreta = (contract.data.modelo_carreta || '-').toUpperCase();
+    if (modeloCarreta.includes('RODOTREM BAÚ')) {
+      doc.setTextColor(255, 0, 0);
+    }
+    doc.text(modeloCarreta, col2 + 25, y);
+    doc.setTextColor(0, 0, 0);
 
     doc.setFont("helvetica", "bold");
-    doc.text("Carreta II:", col3, y);
-    doc.setFont("helvetica", "bold");
-    doc.text(contract.data.carreta2 || '-', col3 + 16, y);
-
-    y += 5;
-    doc.setFont("helvetica", "bold");
-    doc.text("Trajeto:", col1, y);
-    doc.setFont("helvetica", "bold");
-    const origem = contract.data.origem || 'SANTA LUZIA|MG';
-    const destino = contract.data.destino || 'GOV. CELSO RAMOS';
-    
-    doc.text(origem, col1 + 13, y);
-    const origemWidth = doc.getTextWidth(origem);
-    
-    doc.setDrawColor(0);
-    doc.rect(col1 + 15 + origemWidth, y - 3.5, 4, 4);
-    doc.setFont("helvetica", "bold");
-    doc.text("X", col1 + 16 + origemWidth, y - 0.5);
-    
-    doc.setFont("helvetica", "bold");
-    doc.text(destino, col1 + 21 + origemWidth, y);
-
-    y += 5;
-    doc.setFont("helvetica", "bold");
-    doc.text("Tecnologia:", col1, y);
-    doc.setFont("helvetica", "bold");
+    doc.text("Tecnologia:", col3, y);
     const tecnologia = (contract.data.tecnologia || '-').toUpperCase();
     if (tecnologia.includes('SASCAR')) {
       doc.setTextColor(255, 0, 0); // Red for SASCAR
     }
-    doc.text(tecnologia, col1 + 18, y);
+    doc.text(tecnologia, col3 + 18, y);
     doc.setTextColor(0, 0, 0);
 
     // Rules Section
-    y += 8;    // Check if y is too close to bottom, add page if needed
+    y += 10;
     if (y > 260) {
       doc.addPage();
       y = 20;
     }
 
-    const rulesText = `Ao informar início de viagem, deverá aguardar a mensagem **“Ok, Liberado”** que será enviada pela Central de Monitoramento 3corações, autorizando o prosseguimento da viagem;
-Informar todas as paradas e reinícios durante a viagem;
-Ao chegar no local de descarga, enviar macro **“CHEGADA NO CLIENTE”**, e enviando a macro de **“FIM DE VIAGEM”**, somente quando a descarga for finalizada;
-**É proibido parar antes dos 150 km iniciais**, exceto paradas obrigatórias ou problema mecânico/elétrico;
-**É proibido pernoite em residência;**
-Respeitar o horário de rodagem, no período de **05h00min às 22h00min**;
-O veículo será desbloqueado após o pernoite, somente mediante confirmação de senha de segurança do motorista, via teclado;
-Evitar pernoite sob cobertura, evitando perda de sinal da antena;
-**Não conceder carona;**
-Seguir o trajeto predeterminado;
-Respeitar o limite de velocidade da via, não excedendo o limite de **80km/h**;
-Manter a central informada de todas as anormalidades durante o percurso, mantendo a comunicação, via macro, como também pelos telefones: **Fixo (85) 4006.5522 (escolher a opção desejada); WhatsApp (85) 99198.2886 (apenas mensagem e áudio);**
-Dirigir preventivamente, evitando acidentes, preservando sua própria vida, a vida de terceiros e também carga do embarcador;
-Não oferecer, dar ou aceitar de quem quer que seja, tanto por conta própria ou através de terceiro, qualquer pagamento, doação, compensação, vantagens ou benefícios de qualquer natureza que constituam prática ilegal ou prática de corrupção sob as leis de qualquer país;
-**(Proibido passagem por Sergipe);**
-Destino Rio de Janeiro: Agendar escolta com 2 horas de antecedência do ponto de encontro, no pedágio desativado em Duque de Caxias/RJ, evitar rodar depois das 17 horas dentro da área urbana da cidade. Caso necessário, o pernoite acontecerá mais cedo na cidade de Três Rios/RJ (Posto Ipirangão);
-Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e Frango Assado;
-
-**Caso tenha dúvidas, contate nossa central de monitoramento pelos telefones acima informados.**`;
+    const rulesText = PDF_CONTENT.termo.regras;
 
     const renderRichText = (doc: jsPDF, text: string, startX: number, startY: number, maxWidth: number, lineHeight: number) => {
       let currentX = startX;
