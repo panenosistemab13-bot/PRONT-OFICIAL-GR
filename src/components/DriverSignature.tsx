@@ -494,10 +494,17 @@ export const DriverSignature: React.FC = () => {
                     </div>
                     <div className="bg-red-50 border border-red-100 rounded-2xl p-6">
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-[10px] text-red-700 font-bold uppercase tracking-tight">
-                        {getForbiddenStopsForDestination(contract.data.destino || '').map((stop, i) => (
+                        {getForbiddenStopsForDestination(contract.data.destino || '').stops.map((stop, i) => (
                           <div key={i}>• {stop}</div>
                         ))}
                       </div>
+                      {getForbiddenStopsForDestination(contract.data.destino || '').overnight && (
+                        <div className="mt-6 pt-4 border-t border-red-200 text-center">
+                          <p className="text-xs font-bold text-red-800 uppercase tracking-tight">
+                            LUGARES PERMITIDOS PARA PERNOITE: {getForbiddenStopsForDestination(contract.data.destino || '').overnight}
+                          </p>
+                        </div>
+                      )}
                       <div className="mt-6 pt-4 border-t border-red-200 text-center">
                         <p className="text-xs font-bold text-red-800 uppercase tracking-tight">
                           Proibido Parada entre as cidades de Joinville/SC até Palhoça/SC

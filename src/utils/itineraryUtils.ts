@@ -88,34 +88,142 @@ export const getCitiesForDestination = (dest: string, orig: string = "Santa Luzi
   return [orig, "Carmópolis de Minas/MG", "Pouso Alegre/MG", "Bragança Paulista/SP", "Jarinu/SP", "Juquitiba/SP", "São José dos Pinhais/PR", "Joinville/SC", dest];
 };
 
-export const getForbiddenStopsForDestination = (dest: string): string[] => {
+export interface ForbiddenStopsInfo {
+  stops: string[];
+  overnight?: string;
+}
+
+export const getForbiddenStopsForDestination = (dest: string): ForbiddenStopsInfo => {
   const d = dest.toUpperCase();
+
+  if (d.includes("SALVADOR")) {
+    return {
+      stops: ["Salinas/MG", "Jequié/BA", "Simões Filho/BA", "Itaquara-MG", "Cambuí/MG", "Itatiaiuçu-MG", "Extrema-MG", "Pouso Alegre-MG", "Campanha-MG", "Carmópolis de Minas-MG", "Igarapé-MG"],
+      overnight: "Rede Graal"
+    };
+  }
+  if (d.includes("VIANA")) {
+    return { stops: ["João Monlevade/MG"] };
+  }
+  if (d.includes("PATROCINIO PAULISTA") || d.includes("PATROCÍNIO PAULISTA")) {
+    return {
+      stops: ["Itaquara-MG", "Cambuí/MG", "Itatiaiuçu-MG", "Extrema-MG", "Pouso Alegre-MG", "Campanha-MG", "Carmópolis de Minas-MG", "Igarapé-MG"],
+      overnight: "Rede Graal"
+    };
+  }
+  if (d.includes("PINHAIS")) {
+    return {
+      stops: ["Cambuí/MG", "Itatiaiuçu-MG", "Itaquara-MG", "Extrema-MG", "Pouso Alegre-MG", "Campanha-MG", "Carmópolis de Minas-MG", "Igarapé-MG", "Itapeva-MG", "Varginha-MG", "Embu das Artes-SP", "Miracatu-SP"],
+      overnight: "REDE GRAAL"
+    };
+  }
+  if (d.includes("NATAL")) {
+    return {
+      stops: ["Goiana/PE (exceto Posto Fiscal)", "Águas Belas/PE", "Mamanguape/PB", "(Proibido o trânsito pela BR101 no estado de Sergipe, tendo como opção o tráfego pela BR116.)"]
+    };
+  }
+  if (d.includes("LONDRINA")) {
+    return { stops: ["Ribeirão Preto/SP", "Uberaba/MG"] };
+  }
+  if (d.includes("MONTES CLAROS")) {
+    return { stops: ["Região Metropolitana de BH até Paraopebas/MG (só pode parar com 150 km rodados)"] };
+  }
+  if (d.includes("LINHARES")) {
+    return { stops: ["João Monlevade/MG"] };
+  }
+  if (d.includes("JUIZ DE FORA")) {
+    return { stops: ["BELO HORIZONTE MG", "CONTAGEM MG", "CONGONHAS MG", "ANTONIO CARLOS MG", "CRISTIANO OTONI MG"] };
+  }
+  if (d.includes("XAXIM")) {
+    return {
+      stops: ["Cambuí/MG", "Itatiaiuçu-MG", "Itaquara-MG", "Extrema-MG", "Pouso Alegre-MG", "Campanha-MG", "Carmópolis de Minas-MG", "Igarapé-MG", "Itapeva-MG", "Varginha-MG", "Osasco-SP", "Embu das Artes-SP", "Guarulhos-SP (exceto P. Sakamoto)", "Itapecerica da Serra-SP", "Miracatu-SP"]
+    };
+  }
+  if (d.includes("GOV. CELSO RAMOS") || d.includes("GOVERNADOR CELSO RAMOS")) {
+    return {
+      stops: ["Cambuí/MG", "Itatiaiuçu-MG", "Itaquara-MG", "Extrema-MG", "Pouso Alegre-MG", "Campanha-MG", "Carmópolis de Minas-MG", "Igarapé-MG", "Itapeva-MG", "Varginha-MG", "Embu das Artes-SP", "Guarulhos-SP (exceto P. Sakamoto)", "Itapecerica da Serra-SP", "Miracatu-SP"]
+    };
+  }
+  if (d.includes("GUARULHOS")) {
+    return {
+      stops: ["Cambuí/MG", "Itatiaiuçu-MG", "Itaquara-MG", "Extrema-MG", "Pouso Alegre-MG", "Campanha-MG", "Carmópolis de Minas-MG", "Igarapé-MG", "Itapeva-MG", "Varginha-MG", "Embu das Artes-SP", "Guarulhos-SP (exceto P. Sakamoto)", "Itapecerica da Serra-SP", "Miracatu-SP"]
+    };
+  }
+  if (d.includes("EUSEBIO")) {
+    if (d.includes("NATAL")) {
+      return {
+        stops: ["Antes da Cidade de Curvelo/MG (exceto problema mecânico/elétrico)", "Salinas/MG", "Goiana/PE (exceto Posto Fiscal)", "Águas Belas/PE", "Mamanguape/PB", "OBS(Obrigatório informar imediatamente via teclado do rastreador (Proibido o trânsito pela BR101 no estado de Sergipe, tendo como opção o tráfego pela BR116.)"]
+      };
+    }
+    return {
+      stops: ["Antes da Cidade de Curvelo/MG (exceto problema mecânico/elétrico)", "Salinas/MG", "OBS(Obrigatório informar imediatamente via teclado do rastreador)"]
+    };
+  }
+  if (d.includes("CURITIBA")) {
+    if (d.includes("DESTRO")) {
+      return {
+        stops: ["Cambuí/MG", "Itatiaiuçu-MG", "Itaquara-MG", "Extrema-MG", "Pouso Alegre-MG", "Campanha-MG", "Carmópolis de Minas-MG", "Igarapé-MG", "Itapeva-MG", "Varginha-MG", "Embu das Artes-SP", "Miracatu-SP", "Guarulhos-SP (exceto P. Sakamoto)", "Itapecerica da Serra-SP"],
+        overnight: "REDE GRAAL"
+      };
+    }
+    if (d.includes("CONDOR")) {
+      return {
+        stops: ["Cambuí/MG", "Campanha-MG", "Varginha-MG", "Guarulhos-SP (exceto P. Sakamoto)", "Itatiaiuçu-MG", "Carmópolis de Minas-MG", "Itaquara-MG", "Itapecerica da Serra-SP", "Extrema-MG", "Igarapé-MG", "Embu das Artes-SP", "Pouso Alegre-MG", "Itapeva-MG", "Miracatu-SP"],
+        overnight: "REDE GRAAL"
+      };
+    }
+  }
+  if (d.includes("CUIABA") || d.includes("CUIABÁ")) {
+    return { stops: ["Uberlândia/MG"] };
+  }
+  if (d.includes("CASTRO")) {
+    return {
+      stops: ["Cambuí/MG", "Campanha-MG", "Varginha-MG", "Guarulhos-SP (exceto P. Sakamoto)", "Itatiaiuçu-MG", "Carmópolis de Minas-MG", "Itaquara-MG", "Itapecerica da Serra-SP", "Extrema-MG", "Igarapé-MG", "Embu das Artes-SP", "Pouso Alegre-MG", "Itapeva-MG", "Miracatu-SP"],
+      overnight: "REDE GRAAL"
+    };
+  }
+  if (d.includes("CAMPO GRANDE")) {
+    return { stops: ["Uberlândia-MG"] };
+  }
+  if (d.includes("CAMBE") || d.includes("CAMBÉ")) {
+    return { stops: ["Ribeirão Preto/SP"] };
+  }
+  if (d.includes("BRASILIA") || d.includes("BRASÍLIA")) {
+    return { stops: ["Região metropolitana de Brasília/DF"] };
+  }
+  if (d.includes("BEBEDOURO")) {
+    return { stops: ["Itaquara-MG", "Campanha-MG", "Cambuí/MG", "Carmópolis de Minas-MG", "Itatiaiuçu-MG", "Igarapé-MG", "Extrema-MG", "Pouso Alegre-MG"] };
+  }
   if (d.includes("RIO DE JANEIRO")) {
-    return [
-      "Contagem/MG",
-      "Betim/MG",
-      "Barbacena/MG",
-      "Santos Dumont/MG",
-      "Juiz de Fora/MG",
-      "Petrópolis/RJ"
-    ];
+    return {
+      stops: [
+        "Contagem/MG",
+        "Betim/MG",
+        "Barbacena/MG",
+        "Santos Dumont/MG",
+        "Juiz de Fora/MG",
+        "Petrópolis/RJ"
+      ]
+    };
   }
   // Default forbidden stops
-  return [
-    "Cambuí/MG",
-    "Campanha/MG",
-    "Embu das Artes/SP",
-    "Itatiaiuçu/MG",
-    "Carmópolis de Minas/MG",
-    "Guarulhos/SP (exceto P. Sakamoto)",
-    "Itaguara/MG",
-    "Igarapé/MG",
-    "Itapecerica da Serra/SP",
-    "Extrema/MG",
-    "Itapeva/MG",
-    "Miracatu/SP",
-    "Pouso Alegre/MG",
-    "Varginha/MG",
-    "Três Corações/MG"
-  ];
+  return {
+    stops: [
+      "Cambuí/MG",
+      "Campanha/MG",
+      "Embu das Artes/SP",
+      "Itatiaiuçu/MG",
+      "Carmópolis de Minas/MG",
+      "Guarulhos/SP (exceto P. Sakamoto)",
+      "Itaguara/MG",
+      "Igarapé/MG",
+      "Itapecerica da Serra/SP",
+      "Extrema/MG",
+      "Itapeva/MG",
+      "Miracatu/SP",
+      "Pouso Alegre/MG",
+      "Varginha/MG",
+      "Três Corações/MG"
+    ]
+  };
 };

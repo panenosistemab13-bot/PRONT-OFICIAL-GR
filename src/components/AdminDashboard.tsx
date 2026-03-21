@@ -1089,13 +1089,13 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     doc.text("PARADAS PROIBIDAS", pageWidth / 2, y + 5, { align: 'center' });
     y += 7;
 
-    const rawForbiddenStops = getForbiddenStopsForDestination(destino);
+    const forbiddenInfo = getForbiddenStopsForDestination(destino);
     const forbiddenStops = [];
-    for (let i = 0; i < rawForbiddenStops.length; i += 3) {
+    for (let i = 0; i < forbiddenInfo.stops.length; i += 3) {
       forbiddenStops.push([
-        rawForbiddenStops[i] || "",
-        rawForbiddenStops[i + 1] || "",
-        rawForbiddenStops[i + 2] || ""
+        forbiddenInfo.stops[i] || "",
+        forbiddenInfo.stops[i + 1] || "",
+        forbiddenInfo.stops[i + 2] || ""
       ]);
     }
 
@@ -1110,6 +1110,14 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
       doc.text(row[2], 138.6, y + 4.5);
       y += 6;
     });
+
+    if (forbiddenInfo.overnight) {
+      y += 2;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.text(`LUGARES PERMITIDOS PARA PERNOITE: ${forbiddenInfo.overnight}`, pageWidth / 2, y + 4, { align: 'center' });
+      y += 6;
+    }
 
     y += 2;
     doc.setFont("helvetica", "bold");
