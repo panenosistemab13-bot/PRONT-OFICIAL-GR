@@ -1315,21 +1315,23 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
               </p>
             </div>
             
-            <div className="flex items-center gap-3">
-              <div className="flex -space-x-2">
-                {contracts.slice(0, 3).map((c, i) => (
-                  <div key={i} className="w-8 h-8 rounded-full bg-slate-200 border-2 border-white flex items-center justify-center text-[10px] font-bold text-slate-600">
-                    {c.data.motorista?.[0] || 'M'}
-                  </div>
-                ))}
-                {contracts.length > 3 && (
-                  <div className="w-8 h-8 rounded-full bg-indigo-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-indigo-600">
-                    +{contracts.length - 3}
-                  </div>
-                )}
+            {activeTab !== 'generate' && (
+              <div className="flex items-center gap-3">
+                <div className="flex -space-x-2">
+                  {contracts.slice(0, 3).map((c, i) => (
+                    <div key={i} className="w-8 h-8 rounded-full bg-slate-200 border-2 border-white flex items-center justify-center text-[10px] font-bold text-slate-600">
+                      {c.data.motorista?.[0] || 'M'}
+                    </div>
+                  ))}
+                  {contracts.length > 3 && (
+                    <div className="w-8 h-8 rounded-full bg-indigo-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-indigo-600">
+                      +{contracts.length - 3}
+                    </div>
+                  )}
+                </div>
+                <span className="text-xs font-medium text-slate-400">Motoristas ativos</span>
               </div>
-              <span className="text-xs font-medium text-slate-400">Motoristas ativos</span>
-            </div>
+            )}
           </header>
 
           <AnimatePresence mode="wait">

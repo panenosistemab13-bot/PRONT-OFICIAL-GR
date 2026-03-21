@@ -32,6 +32,19 @@ export const getCitiesForDestination = (dest: string, orig: string = "Santa Luzi
   if (d.includes("PATROCINIO PAULISTA") || d.includes("PATROCÍNIO PAULISTA")) {
     return ["Santa Luzia/MG", "Divinópolis/MG", "Capitólio/MG", "Passos/MG", "Patrocínio Paulista/SP"];
   }
+  if (d.includes("GRAVATAI") || d.includes("GRAVATAÍ")) {
+    return [
+      "Santa Luzia/MG",
+      "Carmópolis de Minas/MG",
+      "Pouso Alegre/MG",
+      "Juquitiba/SP",
+      "Pinhais/PR",
+      "Joinville/SC",
+      "Tubarão/SC",
+      "Osório/RS",
+      "Gravatai/RS"
+    ];
+  }
   
   // Default fallback if no match
   return [orig, "Carmópolis de Minas/MG", "Pouso Alegre/MG", "Bragança Paulista/SP", "Jarinu/SP", "Juquitiba/SP", "São José dos Pinhais/PR", "Joinville/SC", dest];
