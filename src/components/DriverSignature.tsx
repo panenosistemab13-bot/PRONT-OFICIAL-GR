@@ -64,6 +64,15 @@ export const DriverSignature: React.FC = () => {
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [signatureData, setSignatureData] = useState<string | null>(null);
 
+  const transportadorasChecklist = [
+    'TOMASI', 'TRANSMAGNA', 'GOBOR', 'APK', 'GT MINAS', 
+    'UNITRADING LOG', 'MODERN LOGISTICS', 'RGS TRANSPORTES', 'JRL TRANSPORTES', 'JRL TRANSPORTES.'
+  ];
+
+  const isChecklistOnly = contract?.data?.transportador 
+    ? transportadorasChecklist.some(t => contract.data.transportador.toUpperCase().includes(t))
+    : false;
+
   useEffect(() => {
     const fetchContract = async () => {
       if (!id) return;
@@ -78,14 +87,23 @@ export const DriverSignature: React.FC = () => {
         if (error) throw error;
 
         if (data && data.dados) {
+          const parsedData = typeof data.dados === 'string' ? JSON.parse(data.dados) : data.dados;
           setContract({
             id: data.id,
-            data: typeof data.dados === 'string' ? JSON.parse(data.dados) : data.dados,
+            data: parsedData,
             signature: data.signature,
             signed_at: data.signed_at,
             created_at: data.created_at,
             onbase_status: data.onbase_status
           }); 
+
+          const transportadoraName = (parsedData.transportador || '').toUpperCase();
+          const isChecklist = transportadorasChecklist.some(t => transportadoraName.includes(t));
+          
+          if (isChecklist && !data.signature) {
+            setStep(3);
+          }
+
           if (data.signature) {
             setSigned(true);
             setSignatureData(data.signature);
@@ -224,22 +242,24 @@ export const DriverSignature: React.FC = () => {
 
             <div className="h-8 w-px bg-slate-100" />
 
-            <div className="flex items-center gap-2">
-              {[1, 2, 3].map((s) => (
-                <div 
-                  key={s}
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-all ${step === s ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20' : step > s ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}
-                >
-                  {step > s ? <CheckCircle className="w-4 h-4" /> : s}
-                </div>
-              ))}
-            </div>
+            {!isChecklistOnly && (
+              <div className="flex items-center gap-2">
+                {[1, 2, 3].map((s) => (
+                  <div 
+                    key={s}
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-all ${step === s ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20' : step > s ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}
+                  >
+                    {step > s ? <CheckCircle className="w-4 h-4" /> : s}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="text-right">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Etapa Atual</span>
             <span className="text-xs font-bold text-slate-700">
-              {step === 1 ? 'Termo GR' : step === 2 ? 'Plano de Rota' : 'Checklist'}
+              {isChecklistOnly ? 'Checklist' : (step === 1 ? 'Termo GR' : step === 2 ? 'Plano de Rota' : 'Checklist')}
             </span>
           </div>
         </header>
@@ -593,12 +613,14 @@ export const DriverSignature: React.FC = () => {
               </div>
 
               <div className="p-6 bg-slate-50 flex justify-start">
-                <button
-                  onClick={() => setStep(2)}
-                  className="px-8 py-4 rounded-2xl font-bold text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
-                >
-                  <ChevronLeft className="w-5 h-5" /> Voltar para Rota
-                </button>
+                {!isChecklistOnly && (
+                  <button
+                    onClick={() => setStep(2)}
+                    className="px-8 py-4 rounded-2xl font-bold text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
+                  >
+                    <ChevronLeft className="w-5 h-5" /> Voltar para Rota
+                  </button>
+                )}
               </div>
             </motion.div>
           )}
