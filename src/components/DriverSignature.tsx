@@ -442,11 +442,7 @@ export const DriverSignature: React.FC = () => {
                 <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 space-y-4">
                   <div className="flex items-center justify-between border-b border-indigo-100 pb-3">
                     <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Origem</span>
-                    <span className="text-sm font-bold text-indigo-900">
-                      {contract.data.origem?.toLowerCase().includes('santa lucia') 
-                        ? 'Santa Luzia-mg' 
-                        : (contract.data.origem || 'Santa Luzia/MG')}
-                    </span>
+                    <span className="text-sm font-bold text-indigo-900">SANTA LUZIA-MG</span>
                   </div>
                   <div className="flex items-center justify-center py-2">
                     <div className="w-8 h-8 rounded-full bg-white border-2 border-indigo-200 flex items-center justify-center text-indigo-400 font-bold">X</div>
@@ -465,7 +461,7 @@ export const DriverSignature: React.FC = () => {
                       <p className="text-xs text-slate-600 leading-relaxed italic">
                         {contract.data.trajeto || getCitiesForDestination(
                           contract.data.destino || '', 
-                          contract.data.origem?.toLowerCase().includes('santa lucia') ? 'Santa Luzia-mg' : (contract.data.origem || '')
+                          'SANTA LUZIA-MG'
                         ).join(', ')}
                       </p>
                     </div>

@@ -12,7 +12,6 @@ import {
   Download,
   Search,
   FileText,
-  Clock,
   CheckCircle2,
   AlertCircle,
   Trash2,
@@ -471,11 +470,7 @@ Também estou ciente de que o veículo não pode ser retirado do local de descar
     doc.setFont("helvetica", "bold");
     doc.text("Trajeto:", col1, y);
     doc.setFont("helvetica", "bold");
-    let rawOrigem = contract.data.origem || 'SANTA LUZIA|MG';
-    if (rawOrigem.toLowerCase().includes('santa lucia')) {
-        rawOrigem = 'Santa Luzia-mg';
-    }
-    const origem = rawOrigem;
+    const origem = contract.data.origem || 'SANTA LUZIA|MG';
     const destino = contract.data.destino || 'GOV. CELSO RAMOS';
     
     doc.text(origem, col1 + 13, y);
@@ -986,11 +981,7 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     y += 8;
 
     // Route Title Bar
-    let rawOrigem = contract.data.origem || 'Santa Luzia/MG';
-    if (rawOrigem.toLowerCase().includes('santa lucia')) {
-        rawOrigem = 'Santa Luzia-mg';
-    }
-    const origem = rawOrigem;
+    const origem = contract.data.origem || 'Santa Luzia/MG';
     const destino = contract.data.destino || 'Gov. Celso Ramos/SC';
     doc.setFont("helvetica", "bold");
     doc.setFillColor(240, 240, 240);

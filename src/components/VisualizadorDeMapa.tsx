@@ -133,9 +133,9 @@ const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({
         </h3>
       </div>
 
-      <div className="flex flex-col md:flex-row border-b-2 border-slate-800 min-h-[450px]">
+      <div className="flex flex-col border-b-2 border-slate-800 min-h-[450px]">
         {/* Área do Mapa (Esquerda) */}
-        <div className="flex-1 bg-white relative overflow-hidden border-b-2 md:border-b-0 md:border-r-2 border-slate-800">
+        <div className="w-full bg-white relative overflow-hidden border-b-2 border-slate-800">
           {loading ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
               <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
