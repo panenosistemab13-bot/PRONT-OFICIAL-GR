@@ -1,13 +1,11 @@
 export const WEB_CONTENT = {
   termo: {
-    titulo: "TERMO DE RESPONSABILIDADE GR",
-    subtitulo: "Normas de Gerenciamento de Risco - Três Corações Alimentos S.A.",
+    titulo: "Olá Motorista! Confira sua Viagem",
+    subtitulo: "Orientações de Segurança - Três Corações Alimentos S.A.",
     corpo: [
-      "Declaro para os devidos fins, que fui contratado(a) pela transportadora, cujos dados seguem abaixo, para efetuar o transporte de carga do embarcador TRÊS CORAÇÕES ALIMENTOS S.A., CAFÉ TRÊS CORAÇÕES S.A.",
-      "Estou ciente quanto às normas e procedimentos descritos nos itens a seguir. Confirmo que li e compreendi todas as regras repassadas quanto ao Gerenciamento de Riscos e me comprometo a cumpri-las em sua totalidade.",
-      "Comprometo-me a entregar a carga ao destinatário, em iguais condições em que recebi. Além de, no decorrer do percurso, colher carimbo e assinatura em todos os Postos Fiscais.",
-      "Estou ciente que, em caso de descumprimento das normas indicadas neste documento, poderei ser responsabilizado civil e criminalmente pelos danos causados à carga em caso de sinistro, estando eu em desacordo com as regras impostas a mim. Dessa forma, fica a critério do embarcador me bloquear ou não para carregamento através da Central de Gerenciamento de Riscos.",
-      "Também estou ciente de que o veículo não pode ser retirado do local de descarga e/ou estacionamento sem autorização da Logística da Filial."
+      "Bem-vindo! Abaixo estão as informações da sua carga e as normas de segurança que você deve seguir durante esta viagem para a 3corações.",
+      "Ao assinar este termo, você confirma que está ciente de todas as regras de Gerenciamento de Risco e se compromete a cumpri-las para garantir a sua segurança e a da carga.",
+      "Lembre-se: em caso de qualquer imprevisto ou dúvida, entre em contato imediatamente com a nossa Central de Monitoramento."
     ],
     regras: [
       "1. Ao informar início de viagem, deverá aguardar a mensagem “Ok, Liberado” que será enviada pela Central de Monitoramento 3corações, autorizando o prosseguimento da viagem;",

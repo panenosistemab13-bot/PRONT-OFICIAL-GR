@@ -242,11 +242,35 @@ export const AdminDashboard: React.FC = () => {
         uf_placas: parts[28] || '', // Usando estado_cavalo como UF padrão
       };
 
+      // Passo 1: Buscar informações da rota na tabela rotas_mestres baseada no destino
+      let itinerarioFinal = parsedInfo.trajeto || parsedInfo.destino || '';
+      let paradasProibidasFinal = '';
+
+      try {
+        const { data: routeData } = await supabase
+          .from('rotas_mestres')
+          .select('itinerario, paradas_proibidas')
+          .ilike('destino', `%${parsedInfo.destino}%`)
+          .limit(1)
+          .single();
+        
+        if (routeData) {
+          itinerarioFinal = parsedInfo.trajeto || routeData.itinerario || itinerarioFinal;
+          paradasProibidasFinal = routeData.paradas_proibidas || '';
+        }
+      } catch (err) {
+        console.warn("Rota mestre não encontrada para o destino:", parsedInfo.destino);
+      }
+
+      // Atualizar parsedInfo com os dados da rota
+      parsedInfo.trajeto = itinerarioFinal;
+      parsedInfo.paradas_proibidas = paradasProibidasFinal;
+
       // Passo 1: Criar o "Termo Padrão" no Código
       const termoTemplate = `
 TERMO DE RESPONSABILIDADE E RETIRADA
-Eu, {nome_motorista}, portador do CPF {cpf} e CNH {cnh}, declaro que recebi o veículo 
-de placa {placa} em perfeitas condições operacionais na data de {data}.
+Eu, {nome_motorista}, portador do CPF {cpf} e CNH {cnh}, declaro que recebi o termo 
+da placa {placa} na data de {data}.
 Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
 `;
 
@@ -959,11 +983,10 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
     y += 7;
 
     // Map & Itinerary Section
-    const mapWidth = 150;
-    const itineraryWidth = 40;
-    const sectionHeight = 120;
+    const mapWidth = 190;
+    const sectionHeight = 100;
 
-    // Map Area (Left)
+    // Map Area (Full Width)
     // Draw image first with a slight "zoom" to eliminate white margins
     let mapLoaded = false;
     try {
@@ -1000,9 +1023,9 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
     // Draw white rectangles around the map area to "mask" the zoom overflow
     doc.setFillColor(255, 255, 255);
     doc.rect(0, y - 10, 210, 10, 'F'); // Top mask
-    doc.rect(0, y + sectionHeight, 210, 50, 'F'); // Bottom mask
+    doc.rect(0, y + sectionHeight, 210, 10, 'F'); // Bottom mask
     doc.rect(0, y, 10, sectionHeight, 'F'); // Left mask
-    doc.rect(10 + mapWidth, y, 60, sectionHeight, 'F'); // Right mask (covers itinerary area temporarily)
+    doc.rect(10 + mapWidth, y, 10, sectionHeight, 'F'); // Right mask
 
     // Re-draw borders for the map area
     doc.setDrawColor(0);
@@ -1016,36 +1039,49 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
       doc.text("(Visualização do mapa indisponível)", 10 + mapWidth / 2, y + sectionHeight / 2 + 5, { align: 'center' });
     }
 
-    // Itinerary Table (Right)
-    doc.rect(10 + mapWidth, y, itineraryWidth, sectionHeight);
+    y += sectionHeight + 5;
+
+    // Itinerary Section (Below Map)
     doc.setFillColor(240, 240, 240);
-    doc.rect(10 + mapWidth, y, itineraryWidth, 6, 'F');
-    doc.rect(10 + mapWidth, y, itineraryWidth, 6);
+    doc.rect(10, y, 190, 6, 'F');
+    doc.rect(10, y, 190, 6);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7.5);
-    doc.text("Cidades do Itinerário :", 10 + mapWidth + itineraryWidth / 2, y + 4, { align: 'center' });
-    
+    doc.text("Cidades do Itinerário :", pageWidth / 2, y + 4, { align: 'center' });
+    y += 6;
+
     const trajetoRaw = contract.data.trajeto || "";
     const cities = trajetoRaw 
-      ? trajetoRaw.split(/[;|\n]+/).map(city => `» ${city.trim()}`).filter(city => city.length > 2)
-      : [`» ${origem}`, "» Carmópolis de Minas/MG", "» Pouso Alegre/MG", "» Bragança Paulista/SP", "» Jarinu/SP", "» Juquitiba/SP", "» São José dos Pinhais/PR", "» Joinville/SC", `» ${destino}`];
+      ? trajetoRaw.split(/[;,\n|]+/).map(city => city.trim()).filter(city => city.length > 2)
+      : [origem, destino];
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(6.5);
-    let itY = y + 10;
-    cities.slice(0, 20).forEach(city => {
-      doc.text(city, 10 + mapWidth + 2, itY);
-      doc.line(10 + mapWidth, itY + 1, 10 + mapWidth + itineraryWidth, itY + 1);
-      itY += 4.5;
-    });
     
-    // Fill remaining lines for table look
-    while (itY < y + sectionHeight) {
-      doc.line(10 + mapWidth, itY + 1, 10 + mapWidth + itineraryWidth, itY + 1);
-      itY += 4.5;
-    }
+    // Draw itinerary in a grid (5 columns)
+    const colWidth = 38;
+    let itX = 10;
+    let itY = y + 4;
 
-    y += sectionHeight + 5;
+    cities.slice(0, 30).forEach((city, idx) => {
+      doc.text(`» ${city}`, itX + 2, itY);
+      doc.line(itX, itY + 1, itX + colWidth, itY + 1);
+      
+      if ((idx + 1) % 5 === 0) {
+        itX = 10;
+        itY += 4.5;
+      } else {
+        itX += colWidth;
+      }
+    });
+
+    // Draw vertical lines for the grid
+    const gridHeight = Math.max(itY - y, 4.5);
+    for (let i = 0; i <= 5; i++) {
+      doc.line(10 + i * colWidth, y, 10 + i * colWidth, y + gridHeight);
+    }
+    
+    y = y + gridHeight + 5;
 
     // Forbidden Stops Section
     doc.setFillColor(240, 240, 240);
@@ -1056,23 +1092,26 @@ Comprometo-me a zelar pelo bem e cumprir as normas de logística da empresa.
     doc.text("PARADAS PROIBIDAS", pageWidth / 2, y + 5, { align: 'center' });
     y += 7;
 
-    const forbiddenStops = [
-      ["Cambuí/MG", "Campanha/MG", "Embu das Artes-SP"],
-      ["Itatiaiuçu-MG", "Carmópolis de Minas-MG", "Guarulhos-SP (exceto P. Sakamoto)"],
-      ["Itaquara-MG", "Igarapé-MG", "Itapecerica da Serra-SP"],
-      ["Extrema-MG", "Itapeva-MG", "Miracatu-SP"],
-      ["Pouso Alegre-MG", "Varginha-MG", ""]
-    ];
+    const forbiddenStopsRaw = contract.data.paradas_proibidas || "";
+    const forbiddenStopsList = forbiddenStopsRaw 
+      ? forbiddenStopsRaw.split(/[;,\n|]+/).map(s => s.trim()).filter(s => s.length > 2)
+      : [];
+
+    // Chunk into rows of 3
+    const forbiddenRows = [];
+    for (let i = 0; i < forbiddenStopsList.length; i += 3) {
+      forbiddenRows.push(forbiddenStopsList.slice(i, i + 3));
+    }
 
     doc.setFontSize(7);
-    forbiddenStops.forEach(row => {
+    forbiddenRows.slice(0, 8).forEach(row => {
       doc.rect(10, y, 63.3, 6);
       doc.rect(73.3, y, 63.3, 6);
       doc.rect(136.6, y, 63.3, 6);
       doc.setFont("helvetica", "normal");
-      doc.text(row[0], 12, y + 4.5);
-      doc.text(row[1], 75.3, y + 4.5);
-      doc.text(row[2], 138.6, y + 4.5);
+      doc.text(row[0] || "", 12, y + 4.5);
+      doc.text(row[1] || "", 75.3, y + 4.5);
+      doc.text(row[2] || "", 138.6, y + 4.5);
       y += 6;
     });
 

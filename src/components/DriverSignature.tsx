@@ -78,9 +78,30 @@ export const DriverSignature: React.FC = () => {
         if (error) throw error;
 
         if (data && data.dados) {
+          const contractData = typeof data.dados === 'string' ? JSON.parse(data.dados) : data.dados;
+          
+          // Se não tiver trajeto ou paradas, busca na rotas_mestres
+          if (!contractData.trajeto || !contractData.paradas_proibidas) {
+            try {
+              const { data: routeData } = await supabase
+                .from('rotas_mestres')
+                .select('itinerario, paradas_proibidas')
+                .ilike('destino', `%${contractData.destino}%`)
+                .limit(1)
+                .single();
+              
+              if (routeData) {
+                contractData.trajeto = contractData.trajeto || routeData.itinerario;
+                contractData.paradas_proibidas = contractData.paradas_proibidas || routeData.paradas_proibidas;
+              }
+            } catch (err) {
+              console.warn("Rota mestre não encontrada para o destino:", contractData.destino);
+            }
+          }
+
           setContract({
             id: data.id,
-            data: typeof data.dados === 'string' ? JSON.parse(data.dados) : data.dados,
+            data: contractData,
             signature: data.signature,
             signed_at: data.signed_at,
             created_at: data.created_at,
@@ -282,8 +303,8 @@ export const DriverSignature: React.FC = () => {
                   referrerPolicy="no-referrer"
                 />
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900 uppercase tracking-tight">TERMO DE RESPONSABILIDADE GR</h2>
-                  <p className="text-slate-400 text-sm font-medium">Normas de Gerenciamento de Risco - Três Corações Alimentos S.A.</p>
+                  <h2 className="text-2xl font-bold text-slate-900 uppercase tracking-tight">{WEB_CONTENT.termo.titulo}</h2>
+                  <p className="text-slate-400 text-sm font-medium">{WEB_CONTENT.termo.subtitulo}</p>
                 </div>
               </div>
 
@@ -427,26 +448,15 @@ export const DriverSignature: React.FC = () => {
                   
                   <div className="mt-6 space-y-4">
                     <div className="flex items-center gap-2 border-b border-indigo-100 pb-2">
-                      <MapPin className="w-4 h-4 text-indigo-500" />
-                      <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-widest">Cidades do Itinerário</h4>
-                    </div>
-                    <div className="bg-white border border-indigo-100 rounded-xl p-4">
-                      <p className="text-xs text-slate-600 leading-relaxed italic">
-                        {contract.data.trajeto || 'Santa Luzia, Carmópolis de Minas, Pouso Alegre, Cambuí, Extrema, Atibaia, Campinas, Sumaré.'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 space-y-4">
-                    <div className="flex items-center gap-2 border-b border-indigo-100 pb-2">
                       <Truck className="w-4 h-4 text-indigo-500" />
-                      <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-widest">Mapa do Trajeto</h4>
+                      <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-widest">Plano de Rota Detalhado</h4>
                     </div>
                     
                     {contract.data.destino ? (
                       <VisualizadorDeMapa 
                         destination={contract.data.destino} 
                         itinerary={contract.data.trajeto} 
+                        forbiddenStops={contract.data.paradas_proibidas}
                         mapa_arquivo={contract.data.mapa_arquivo}
                         driverName={contract.data.motorista}
                         driverCpf={contract.data.cpf}
@@ -458,40 +468,6 @@ export const DriverSignature: React.FC = () => {
                         <p className="text-xs font-bold text-red-700">Destino não informado para carregar o mapa.</p>
                       </div>
                     )}
-                  </div>
-
-                  <div className="mt-8 space-y-3">
-                    <div className="flex items-center gap-2 border-b border-red-100 pb-2">
-                      <AlertCircle className="w-4 h-4 text-red-500" />
-                      <h4 className="text-xs font-bold text-red-900 uppercase tracking-widest">Paradas Proibidas</h4>
-                    </div>
-                    <div className="bg-red-50 border border-red-100 rounded-2xl p-6">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-[10px] text-red-700 font-bold uppercase tracking-tight">
-                        <div>• Cambuí/MG</div>
-                        <div>• Campanha/MG</div>
-                        <div>• Embu das Artes/SP</div>
-                        <div>• Itatiaiuçu/MG</div>
-                        <div>• Carmópolis de Minas/MG</div>
-                        <div>• Guarulhos/SP</div>
-                        <div>• Itaguara/MG</div>
-                        <div>• Igarapé/MG</div>
-                        <div>• Itapecerica da Serra/SP</div>
-                        <div>• Extrema/MG</div>
-                        <div>• Itapeva/MG</div>
-                        <div>• Miracatu/SP</div>
-                        <div>• Pouso Alegre/MG</div>
-                        <div>• Varginha/MG</div>
-                        <div>• Três Corações/MG</div>
-                      </div>
-                      <div className="mt-6 pt-4 border-t border-red-200 text-center">
-                        <p className="text-xs font-bold text-red-800 uppercase tracking-tight">
-                          Proibido Parada entre as cidades de Joinville/SC até Palhoça/SC
-                        </p>
-                        <p className="text-[9px] text-red-600 mt-1">
-                          Trechos proibidos em Santa Catarina e áreas urbanas de alto risco.
-                        </p>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>

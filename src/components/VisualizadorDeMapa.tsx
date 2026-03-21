@@ -6,6 +6,7 @@ import { LOGO_3_CORACOES } from '../constants';
 interface VisualizadorDeMapaProps {
   destination: string;
   itinerary?: string;
+  forbiddenStops?: string;
   mapa_arquivo?: string;
   driverName?: string;
   driverCpf?: string;
@@ -15,6 +16,7 @@ interface VisualizadorDeMapaProps {
 const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({ 
   destination, 
   itinerary, 
+  forbiddenStops,
   mapa_arquivo,
   driverName,
   driverCpf,
@@ -132,9 +134,9 @@ const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({
         </h3>
       </div>
 
-      <div className="flex flex-col md:flex-row border-b-2 border-slate-800 min-h-[450px]">
-        {/* Área do Mapa (Esquerda) */}
-        <div className="flex-1 bg-white relative overflow-hidden border-b-2 md:border-b-0 md:border-r-2 border-slate-800">
+      <div className="flex flex-col border-b-2 border-slate-800">
+        {/* Área do Mapa - Ampliada conforme solicitado */}
+        <div className="w-full h-[450px] bg-white relative overflow-hidden border-b-2 border-slate-800">
           {loading ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
               <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
@@ -159,27 +161,53 @@ const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({
           )}
         </div>
 
-        {/* Cidades do Itinerário (Direita) - Restaurada conforme solicitado */}
-        <div className="w-full md:w-72 bg-white flex flex-col">
+        {/* Cidades do Itinerário - Abaixo do mapa conforme solicitado */}
+        <div className="w-full bg-white flex flex-col border-b-2 border-slate-800">
           <div className="bg-slate-100 p-2 border-b-2 border-slate-800 text-center">
-            <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-tighter">Cidades do Itinerário</h3>
+            <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-tight">CIDADES DO ITINERÁRIO</h3>
           </div>
-          <div className="flex-1 overflow-auto max-h-[300px] md:max-h-none">
-            <table className="w-full border-collapse text-[10px]">
-              <tbody>
-                {cities.length > 0 ? (
-                  cities.map((city, index) => (
-                    <tr key={index} className="border-b border-slate-200 last:border-0 hover:bg-slate-50">
-                      <td className="p-2 font-medium text-slate-700">{city}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td className="p-4 text-center text-slate-400 italic">Itinerário não disponível</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+          <div className="p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+              {cities.length > 0 ? (
+                cities.map((city, index) => (
+                  <div key={index} className="flex items-center gap-2 text-[10px] font-bold text-slate-700 uppercase">
+                    <span className="text-indigo-500">»</span>
+                    {city}
+                  </div>
+                ))
+              ) : (
+                <p className="text-[10px] text-slate-400 italic text-center col-span-full">Itinerário não disponível</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Paradas Proibidas - Seguindo fielmente o PDF */}
+        <div className="w-full bg-white flex flex-col">
+          <div className="bg-slate-100 p-2 border-b-2 border-slate-800 text-center">
+            <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-tight">PARADAS PROIBIDAS</h3>
+          </div>
+          <div className="p-4 bg-red-50/30">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-2 gap-x-4">
+              {forbiddenStops ? (
+                forbiddenStops.split(/[;,\n]+/).map(stop => stop.trim()).filter(stop => stop.length > 2).map((stop, index) => (
+                  <div key={index} className="text-[10px] font-bold text-red-700 uppercase flex items-center gap-1">
+                    <span className="text-red-400">•</span>
+                    {stop}
+                  </div>
+                ))
+              ) : (
+                <p className="text-[10px] text-slate-400 italic text-center col-span-full">Nenhuma parada proibida informada</p>
+              )}
+            </div>
+            <div className="mt-4 pt-3 border-t border-red-200 text-center">
+              <p className="text-[11px] font-black text-red-800 uppercase tracking-tight">
+                Proibido Parada entre as cidades de Joinville/SC até Palhoça/SC
+              </p>
+              <p className="text-[9px] text-red-600 mt-0.5 font-medium">
+                Trechos proibidos em Santa Catarina e áreas urbanas de alto risco.
+              </p>
+            </div>
           </div>
         </div>
       </div>
