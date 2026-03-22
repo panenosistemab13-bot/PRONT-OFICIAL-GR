@@ -388,23 +388,27 @@ export const DriverSignature: React.FC = () => {
                 <div className="mt-8 space-y-4">
                   <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">Regras de Ouro (21 Itens)</h4>
                   <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 text-[11px] text-slate-600 leading-relaxed">
-                    <p>Ao informar início de viagem, deverá aguardar a mensagem <strong>“Ok, Liberado”</strong> que será enviada pela Central de Monitoramento 3corações, autorizando o prosseguimento da viagem;</p>
-                    <p>Informar todas as paradas e reinícios durante a viagem;</p>
-                    <p>Ao chegar no local de descarga, enviar macro <strong>“CHEGADA NO CLIENTE”</strong>, e enviando a macro de <strong>“FIM DE VIAGEM”</strong>, somente quando a descarga for finalizada;</p>
-                    <p><strong>É proibido parar antes dos 150 km iniciais</strong>, exceto paradas obrigatórias ou problema mecânico/elétrico;</p>
-                    <p><strong>É proibido pernoite em residência;</strong></p>
-                    <p>Respeitar o horário de rodagem, no período de <strong>05h00min às 22h00min</strong>;</p>
-                    <p>O veículo será desbloqueado após o pernoite, somente mediante confirmação de senha de segurança do motorista, via teclado;</p>
-                    <p>Evitar pernoite sob cobertura, evitando perda de sinal da antena;</p>
-                    <p><strong>Não conceder carona;</strong></p>
-                    <p>Seguir a rota predeterminada;</p>
-                    <p>Respeitar o limite de velocidade da via, não excedendo o limite de <strong>80km/h</strong>;</p>
-                    <p>Manter a central informada de todas as anormalidades durante o percurso, mantendo a comunicação, via macro, como também pelos telefones: <strong>Fixo (85) 4006.5522 (escolher a opção desejada); WhatsApp (85) 99198.2886 (apenas mensagem e áudio);</strong></p>
-                    <p>Dirigir preventivamente, evitando acidentes, preservando sua própria vida, a vida de terceiros e também carga do embarcador;</p>
-                    <p>Não oferecer, dar ou aceitar de quem quer que seja, tanto por conta própria ou através de terceiro, qualquer pagamento, doação, compensação, vantagens ou benefícios de qualquer natureza que constituam prática ilegal ou prática de corrupção sob as leis de qualquer país;</p>
-                    <p><strong>(Proibido passagem por Sergipe);</strong></p>
-                    <p>Destino Rio de Janeiro: Agendar escolta com 2 horas de antecedência do ponto de encontro, no pedágio desativado em Duque de Caxias/RJ, evitar rodar depois das 17 horas dentro da área urbana da cidade. Caso necessário, o pernoite acontecerá mais cedo na cidade de Três Rios/RJ (Posto Ipirangão);</p>
-                    <p>Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e Frango Assado;</p>
+                    <p>1. Ao informar início de viagem, deverá aguardar a mensagem <strong>“Ok, Liberado”</strong> que será enviada pela Central de Monitoramento 3corações, autorizando o prosseguimento da viagem;</p>
+                    <p>2. Informar todas as paradas e reinícios durante a viagem;</p>
+                    <p>3. Ao chegar no local de descarga, enviar macro <strong>“CHEGADA NO CLIENTE”</strong>, e enviando a macro de <strong>“FIM DE VIAGEM”</strong>, somente quando a descarga for finalizada;</p>
+                    <p>4. <strong>É proibido parar antes dos 150 km iniciais</strong>, exceto paradas obrigatórias ou problema mecânico/elétrico;</p>
+                    <p>5. <strong>É proibido pernoite em residência;</strong></p>
+                    <p>6. Respeitar o horário de rodagem, no período de <strong>05h00min às 22h00min</strong>;</p>
+                    <p>7. O veículo será desbloqueado após o pernoite, somente mediante confirmação de senha de segurança do motorista, via teclado;</p>
+                    <p>8. Evitar pernoite sob cobertura, evitando perda de sinal da antena;</p>
+                    <p>9. <strong>Não conceder carona;</strong></p>
+                    <p>10. Seguir o trajeto predeterminado;</p>
+                    <p>11. Respeitar o limite de velocidade da via, não excedendo o limite de <strong>80km/h</strong>;</p>
+                    <p>12. Manter a central informada de todas as anormalidades durante o percurso, mantendo a comunicação, via macro, como também pelos telefones: <strong>Fixo (85) 4006.5522 (escolher a opção desejada); WhatsApp (85) 99198.2886 (apenas mensagem e áudio);</strong></p>
+                    <p>13. Dirigir preventivamente, evitando acidentes, preservando sua própria vida, a vida de terceiros e também carga do embarcador;</p>
+                    <p>14. Não oferecer, dar ou aceitar de quem quer que seja, tanto por conta própria ou através de terceiro, qualquer pagamento, doação, compensação, vantagens ou benefícios de qualquer natureza que constituam prática ilegal ou prática de corrupção sob as leis de qualquer país;</p>
+                    <p>15. <strong>(Proibido passagem por Sergipe);</strong></p>
+                    <p>16. Destino Rio de Janeiro: Agendar escolta com 2 horas de antecedência do ponto de encontro, no pedágio desativado em Duque de Caxias/RJ, evitar rodar depois das 17 horas dentro da área urbana da cidade. Caso necessário, o pernoite acontecerá mais cedo na cidade de Três Rios/RJ (Posto Ipirangão);</p>
+                    <p>17. Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e Frango Assado;</p>
+                    <p>18. Manter o veículo travado e com os vidros fechados durante todo o percurso;</p>
+                    <p>19. Não realizar paradas em locais não autorizados ou sem infraestrutura de segurança;</p>
+                    <p>20. Em caso de suspeita de acompanhamento, acionar imediatamente o botão de pânico;</p>
+                    <p>21. Realizar o teste de teclado/comunicação antes de iniciar a viagem.</p>
                     <p className="font-bold text-slate-900 mt-4">Caso tenha dúvidas, contate nossa central de monitoramento pelos telefones acima informados.</p>
                   </div>
                 </div>
