@@ -28,6 +28,7 @@ import {
   Coffee,
   Clock
 } from 'lucide-react';
+import { supabase } from '../services/supabase';
 import { DriverData, Contract } from '../types';
 import { 
   PieChart, 
@@ -150,14 +151,29 @@ export const AdminDashboard: React.FC = () => {
     });
   };
 
-  // 1. BUSCAR HISTÓRICO REAL DO SERVIDOR (PROXY PARA SUPABASE)
+  // 1. BUSCAR HISTÓRICO REAL DO SUPABASE
   const fetchHistory = async () => {
     setHistoryLoading(true);
     try {
-      const response = await fetch('/api/contracts');
-      if (!response.ok) throw new Error('Failed to fetch history');
-      const data = await response.json();
-      setContracts(data);
+      // Busca dados da tabela 'contracts' do projeto 'PRONT OFICIAL GR'
+      const { data, error } = await supabase
+        .from('contracts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      const mappedContracts = (data || []).map(row => ({
+        id: row.id,
+        data: typeof row.dados === 'string' ? JSON.parse(row.dados) : row.dados,
+        termo: row.termo,
+        signature: row.signature,
+        signed_at: row.signed_at,
+        created_at: row.created_at,
+        onbase_status: row.onbase_status
+      }));
+      
+      setContracts(mappedContracts);
     } catch (error) {
       console.error("Erro ao carregar histórico:", error);
     } finally {
@@ -280,21 +296,29 @@ Também estou ciente de que o veículo não pode ser retirado do local de descar
         created_at: new Date().toISOString()
       };
 
-      // SALVA NO SERVIDOR (PROXY PARA SUPABASE)
-      const response = await fetch('/api/contracts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: newId, data: contractData.dados })
-      });
+      // SALVA DIRETO NO SUPABASE (Tabela contracts)
+      const { error } = await supabase
+        .from('contracts')
+        .insert([{ 
+          id: newId,
+          termo: termoGerado, // Texto do contrato
+          dados: contractData.dados, // O JSON com RG, CNH, etc.
+          created_at: new Date()
+        }]);
 
-      if (!response.ok) throw new Error('Failed to save contract');
-
-      alert("Link gerado e salvo com sucesso no Banco de Dados!");
+      if (error) {
+        alert("Erro ao salvar: " + error.message);
+        throw error;
+      } else {
+        alert("Contrato assinado com sucesso!");
+        console.log("Salvo com sucesso!");
+      }
       
       // Atualiza a lista local para mostrar o novo card
       const localContract = {
         id: newId,
         data: contractData.dados,
+        termo: termoGerado,
         onbase_status: false,
         created_at: contractData.created_at
       };
@@ -318,11 +342,12 @@ Também estou ciente de que o veículo não pode ser retirado do local de descar
     if (!confirm('Tem certeza que deseja excluir este registro?')) return;
     
     try {
-      const response = await fetch(`/api/contracts/${id}`, {
-        method: 'DELETE'
-      });
+      const { error } = await supabase
+        .from('contracts')
+        .delete()
+        .eq('id', id);
 
-      if (!response.ok) throw new Error('Failed to delete contract');
+      if (error) throw error;
       
       // Atualiza a lista na tela imediatamente
       setContracts(contracts.filter(c => c.id !== id));
@@ -335,13 +360,12 @@ Também estou ciente de que o veículo não pode ser retirado do local de descar
   // 3. MARCAR SE FOI PARA O ONBASE
   const handleOnbaseToggle = async (id: string, newStatus: boolean) => {
     try {
-      const response = await fetch(`/api/contracts/${id}/onbase`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      });
+      const { error } = await supabase
+        .from('contracts')
+        .update({ onbase_status: newStatus })
+        .eq('id', id);
       
-      if (!response.ok) throw new Error('Failed to update onbase status');
+      if (error) throw error;
       
       setContracts(contracts.map(c => 
         c.id === id ? { ...c, onbase_status: newStatus } : c
@@ -986,14 +1010,29 @@ Pernoite na BR-381 Rod. Fernão Dias, somente autorizado nos postos Rede Graal e
     // Draw image first with a slight "zoom" to eliminate white margins
     let mapLoaded = false;
     try {
-      const mapsResponse = await fetch('/api/maps');
-      if (mapsResponse.ok) {
-        const maps = await mapsResponse.json();
-        const mapData = maps.find((m: any) => m.destination.toLowerCase().includes(destino.toLowerCase()));
+      const { data: mapData, error: mapError } = await supabase
+        .from('maps')
+        .select('image_data')
+        .ilike('destination', `%${destino}%`)
+        .limit(1)
+        .single();
 
-        if (mapData?.image_data) {
+      if (!mapError && mapData?.image_data) {
+        // Zoom in by drawing slightly larger and offset
+        doc.addImage(mapData.image_data, 'PNG', 10 - 5, y - 5, mapWidth + 10, sectionHeight + 10);
+        mapLoaded = true;
+      } else if (contract.data.mapa_arquivo) {
+        const { data: { publicUrl } } = supabase.storage.from('mapas-rotas').getPublicUrl(contract.data.mapa_arquivo);
+        const response = await fetch(publicUrl);
+        if (response.ok) {
+          const blob = await response.blob();
+          const base64 = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
           // Zoom in by drawing slightly larger and offset
-          doc.addImage(mapData.image_data, 'PNG', 10 - 5, y - 5, mapWidth + 10, sectionHeight + 10);
+          doc.addImage(base64, 'PNG', 10 - 5, y - 5, mapWidth + 10, sectionHeight + 10);
           mapLoaded = true;
         }
       }
