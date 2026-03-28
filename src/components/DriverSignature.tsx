@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import { SignaturePad } from './SignaturePad';
 import { Contract } from '../types';
-import { supabase } from '../services/supabase';
 import VisualizadorDeMapa from './VisualizadorDeMapa';
 import { LOGO_3_CORACOES } from '../constants';
 import { getCitiesForDestination, getForbiddenStopsForDestination } from '../utils/itineraryUtils';
@@ -78,26 +77,21 @@ export const DriverSignature: React.FC = () => {
       if (!id) return;
       
       try {
-        const { data, error } = await supabase
-          .from('contracts')
-          .select('*')
-          .eq('id', id)
-          .single();
+        const response = await fetch(`/api/contracts/${id}`);
+        if (!response.ok) throw new Error('Failed to fetch contract');
+        const data = await response.json();
 
-        if (error) throw error;
-
-        if (data && data.dados) {
-          const parsedData = typeof data.dados === 'string' ? JSON.parse(data.dados) : data.dados;
+        if (data && data.data) {
           setContract({
             id: data.id,
-            data: parsedData,
+            data: data.data,
             signature: data.signature,
             signed_at: data.signed_at,
             created_at: data.created_at,
             onbase_status: data.onbase_status
           }); 
 
-          const transportadoraName = (parsedData.transportador || '').toUpperCase();
+          const transportadoraName = (data.data.transportador || '').toUpperCase();
           const isChecklist = transportadorasChecklist.some(t => transportadoraName.includes(t));
           
           if (isChecklist && !data.signature) {
@@ -145,15 +139,14 @@ export const DriverSignature: React.FC = () => {
   const handleFinalize = async (signatureToSave: string) => {
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('contracts')
-        .update({ 
-          signature: signatureToSave, 
-          signed_at: new Date().toISOString() 
-        })
-        .eq('id', id);
+      const response = await fetch(`/api/contracts/${id}/sign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signature: signatureToSave })
+      });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error('Failed to sign contract');
+
       setSignatureData(signatureToSave);
       setSigned(true);
       setShowConfirmModal(false);
