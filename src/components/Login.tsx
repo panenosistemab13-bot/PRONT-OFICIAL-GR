@@ -1,26 +1,42 @@
 import React, { useState } from 'react';
 import { Lock, ArrowRight, AlertCircle } from 'lucide-react';
 import { LOGO_3_CORACOES } from '../constants';
+import { supabase } from '../services/supabase';
 
 export const Login = ({ onLogin }: { onLogin: () => void }) => {
-  const [username, setUsername] = useState('assinagr3c');
+  const [email, setEmail] = useState('assinagr@3c.com');
   const [password, setPassword] = useState('agentesderisco3c');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
     
-    setTimeout(() => {
-      if (username === 'assinagr3c' && password === 'agentesderisco3c') {
-        onLogin();
-      } else {
-        setError('Acesso negado');
+    try {
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (authError) {
+        // Isso impede a tela preta! Ele vai te dizer o erro real.
+        alert("Erro ao entrar: " + authError.message);
+        setError(authError.message);
         setIsLoading(false);
+        return;
       }
-    }, 800);
+
+      if (data.user) {
+        // Se deu certo, ele limpa a tela e vai para o app
+        onLogin();
+      }
+    } catch (err) {
+      alert("Ocorreu um erro inesperado no código.");
+      setError("Erro inesperado");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -41,11 +57,11 @@ export const Login = ({ onLogin }: { onLogin: () => void }) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-white/50 border border-slate-200 text-slate-900 rounded-xl px-4 py-3.5 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
-              placeholder="Identificação"
+              placeholder="E-mail"
               required
             />
             <input

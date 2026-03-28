@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../services/supabase';
 
 import { LOGO_3_CORACOES } from '../constants';
 import { getCitiesForDestination } from '../utils/itineraryUtils';
@@ -36,26 +35,20 @@ const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({
         setLoading(true);
         setError(false);
         
-        // 1. Busca na tabela 'maps' pelo destino
-        const { data, error: fetchError } = await supabase
-          .from('maps')
-          .select('image_data')
-          .ilike('destination', `%${destination}%`)
-          .limit(1)
-          .single();
+        // 1. Busca na API pelo destino
+        const response = await fetch('/api/maps');
+        if (response.ok) {
+          const maps = await response.json();
+          const mapData = maps.find((m: any) => m.destination.toLowerCase().includes(destination.toLowerCase()));
 
-        if (fetchError || !data || !data.image_data) {
-          console.warn("Mapa não encontrado na tabela 'maps' para:", destination);
-          
-          // 2. Fallback para o storage se não encontrar na tabela maps
-          if (mapa_arquivo) {
-            const { data: { publicUrl } } = supabase.storage.from('mapas-rotas').getPublicUrl(mapa_arquivo);
-            setMapImage(publicUrl);
+          if (mapData?.image_data) {
+            setMapImage(mapData.image_data);
           } else {
+            console.warn("Mapa não encontrado na API para:", destination);
             setError(true);
           }
         } else {
-          setMapImage(data.image_data);
+          setError(true);
         }
       } catch (err) {
         console.error("Erro ao buscar mapa:", err);
@@ -66,16 +59,11 @@ const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({
     };
 
     fetchMap();
-  }, [destination, mapa_arquivo]);
+  }, [destination]);
 
   const handleImageError = () => {
-    console.warn("Erro ao carregar imagem do mapa, tentando fallback...");
-    if (mapa_arquivo && !mapImage?.includes('supabase.co')) {
-      const { data: { publicUrl } } = supabase.storage.from('mapas-rotas').getPublicUrl(mapa_arquivo);
-      setMapImage(publicUrl);
-    } else {
-      setError(true);
-    }
+    console.warn("Erro ao carregar imagem do mapa");
+    setError(true);
   };
 
   // Processar o itinerário
