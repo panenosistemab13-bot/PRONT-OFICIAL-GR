@@ -261,8 +261,6 @@ Também estou ciente de que o veículo não pode ser retirado do local de descar
         .replace('{data}', parsedInfo.data || new Date().toLocaleDateString('pt-BR'));
 
       console.log("Termo Gerado com Sucesso:", termoGerado);
-
-      const newId = Math.random().toString(36).substring(2, 9);
       
       // Identifica qual mapa usar com base no destino da planilha
       const destinoInfo = (parsedInfo.destino || "").toUpperCase();
@@ -282,7 +280,6 @@ Também estou ciente de que o veículo não pode ser retirado do local de descar
       
       // Objeto com os dados que você colou da planilha
       const contractData = {
-        id: newId,
         dados: { 
           ...parsedInfo,
           motorista: parsedInfo.motorista || "NOME_DO_MOTORISTA", // Pegar do seu input/planilha
@@ -296,27 +293,31 @@ Também estou ciente de que o veículo não pode ser retirado do local de descar
       };
 
       // SALVA DIRETO NO SUPABASE (Tabela contracts)
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('contracts')
-        .insert([contractData]);
+        .insert([contractData])
+        .select()
+        .single();
 
       if (error) throw error;
 
-      alert("Link gerado e salvo com sucesso no Banco de Dados!");
-      
-      // Atualiza a lista local para mostrar o novo card
-      const localContract = {
-        id: newId,
-        data: contractData.dados,
-        onbase_status: false,
-        created_at: contractData.created_at
-      };
-      setContracts([localContract, ...contracts]);
-      
-      // GERAR LINK
-      const url = `${window.location.origin}/sign/${newId}`;
-      setGeneratedLink(url);
-      setParsedData(contractData.dados as any);
+      if (data) {
+        alert("Link gerado e salvo com sucesso no Banco de Dados!");
+        
+        // Atualiza a lista local para mostrar o novo card
+        const localContract = {
+          id: data.id,
+          data: data.dados,
+          onbase_status: data.onbase_status,
+          created_at: data.created_at
+        };
+        setContracts([localContract, ...contracts]);
+        
+        // GERAR LINK
+        const url = `${window.location.origin}/sign/${data.id}`;
+        setGeneratedLink(url);
+        setParsedData(data.dados as any);
+      }
       
     } catch (error) {
       console.error("Erro ao salvar no Supabase:", error);
