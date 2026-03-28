@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AdminDashboard } from './components/AdminDashboard';
 import { DriverSignature } from './components/DriverSignature';
 import { Login } from './components/Login';
-import ErrorBoundary from './components/ErrorBoundary';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -13,16 +12,14 @@ export default function App() {
   };
 
   return (
-    <ErrorBoundary>
-      <Router>
-        <Routes>
-          <Route 
-            path="/" 
-            element={isAuthenticated ? <AdminDashboard /> : <Login onLogin={handleLogin} />} 
-          />
-          <Route path="/sign/:id" element={<DriverSignature />} />
-        </Routes>
-      </Router>
-    </ErrorBoundary>
+    <Router>
+      <Routes>
+        <Route 
+          path="/" 
+          element={isAuthenticated ? <AdminDashboard /> : <Login onLogin={handleLogin} />} 
+        />
+        <Route path="/sign/:id" element={<DriverSignature />} />
+      </Routes>
+    </Router>
   );
 }
