@@ -87,7 +87,16 @@ export const DriverSignature: React.FC = () => {
         if (error) throw error;
 
         if (data && data.dados) {
-          const parsedData = typeof data.dados === 'string' ? JSON.parse(data.dados) : data.dados;
+          let parsedData = data.dados;
+          try {
+            if (typeof data.dados === 'string') {
+              parsedData = JSON.parse(data.dados);
+            }
+          } catch (parseError) {
+            console.error("Erro ao processar dados do contrato (JSON malformado):", parseError);
+            // Mantém parsedData como está (string ou objeto original)
+          }
+
           setContract({
             id: data.id,
             data: parsedData,

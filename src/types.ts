@@ -41,6 +41,7 @@ export interface DriverData {
   dias?: string;
   mapa_arquivo?: string;
   paradas_proibidas?: string;
+  termo_personalizado?: string;
 }
 
 export interface Contract {

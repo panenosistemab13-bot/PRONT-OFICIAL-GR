@@ -163,15 +163,26 @@ export const AdminDashboard: React.FC = () => {
 
       if (error) throw error;
       
-      const mappedContracts = (data || []).map(row => ({
-        id: row.id,
-        data: typeof row.dados === 'string' ? JSON.parse(row.dados) : row.dados,
-        termo: row.termo,
-        signature: row.signature,
-        signed_at: row.signed_at,
-        created_at: row.created_at,
-        onbase_status: row.onbase_status
-      }));
+      const mappedContracts = (data || []).map(row => {
+        let parsedDados = row.dados;
+        try {
+          if (typeof row.dados === 'string') {
+            parsedDados = JSON.parse(row.dados);
+          }
+        } catch (parseError) {
+          console.error(`Erro ao processar contrato ${row.id} (JSON malformado):`, parseError);
+        }
+
+        return {
+          id: row.id,
+          data: parsedDados,
+          termo: row.termo,
+          signature: row.signature,
+          signed_at: row.signed_at,
+          created_at: row.created_at,
+          onbase_status: row.onbase_status
+        };
+      });
       
       setContracts(mappedContracts);
     } catch (error) {

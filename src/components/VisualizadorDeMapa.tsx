@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { supabase } from '../services/supabase';
 
 import { LOGO_3_CORACOES } from '../constants';
 import { getCitiesForDestination } from '../utils/itineraryUtils';
@@ -35,35 +36,62 @@ const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({
         setLoading(true);
         setError(false);
         
-        // 1. Busca na API pelo destino
-        const response = await fetch('/api/maps');
-        if (response.ok) {
-          const maps = await response.json();
-          const mapData = maps.find((m: any) => m.destination.toLowerCase().includes(destination.toLowerCase()));
+        // 1. Busca na tabela 'maps' pelo destino com proteção try/catch
+        const { data, error: fetchError } = await supabase
+          .from('maps')
+          .select('*')
+          .eq('destination', destination)
+          .single();
 
-          if (mapData?.image_data) {
-            setMapImage(mapData.image_data);
-          } else {
-            console.warn("Mapa não encontrado na API para:", destination);
-            setError(true);
+        if (fetchError || !data) {
+          console.warn("Mapa não encontrado para este destino:", destination);
+          
+          // Tenta busca por CPF se o destino falhar (conforme sugestão do usuário)
+          if (driverCpf) {
+            const { data: cpfData, error: cpfError } = await supabase
+              .from('maps')
+              .select('*')
+              .eq('driver_cpf', driverCpf)
+              .single();
+            
+            if (!cpfError && cpfData?.image_data) {
+              setMapImage(cpfData.image_data);
+              setLoading(false);
+              return;
+            }
           }
-        } else {
-          setError(true);
+
+          // 2. Fallback para o storage se não encontrar na tabela maps
+          if (mapa_arquivo) {
+            const { data: { publicUrl } } = supabase.storage.from('mapas-rotas').getPublicUrl(mapa_arquivo);
+            setMapImage(publicUrl);
+          }
+          setLoading(false);
+          return; // Para aqui sem travar o app
         }
-      } catch (err) {
-        console.error("Erro ao buscar mapa:", err);
-        setError(true);
+
+        // Se encontrou na tabela, usamos os dados
+        if (data.image_data) {
+          setMapImage(data.image_data);
+        }
+      } catch (e) {
+        console.error("Erro crítico ao carregar mapa", e);
       } finally {
         setLoading(false);
       }
     };
 
     fetchMap();
-  }, [destination]);
+  }, [destination, mapa_arquivo]);
 
   const handleImageError = () => {
-    console.warn("Erro ao carregar imagem do mapa");
-    setError(true);
+    console.warn("Erro ao carregar imagem do mapa, tentando fallback...");
+    if (mapa_arquivo && !mapImage?.includes('supabase.co')) {
+      const { data: { publicUrl } } = supabase.storage.from('mapas-rotas').getPublicUrl(mapa_arquivo);
+      setMapImage(publicUrl);
+    } else {
+      setError(true);
+    }
   };
 
   // Processar o itinerário
