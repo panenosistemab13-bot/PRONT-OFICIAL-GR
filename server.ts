@@ -30,21 +30,11 @@ async function startServer() {
 
       if (error) throw error;
 
-      res.json(contracts.map(c => {
-        let parsedDados = c.dados;
-        try {
-          if (typeof c.dados === 'string') {
-            parsedDados = JSON.parse(c.dados);
-          }
-        } catch (e) {
-          console.error(`Error parsing contract ${c.id}:`, e);
-        }
-        return {
-          ...c,
-          data: parsedDados,
-          onbase_status: !!c.onbase_status
-        };
-      }));
+      res.json(contracts.map(c => ({
+        ...c,
+        data: typeof c.dados === 'string' ? JSON.parse(c.dados) : c.dados,
+        onbase_status: !!c.onbase_status
+      })));
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Failed to fetch contracts" });
@@ -80,18 +70,9 @@ async function startServer() {
         return res.status(404).json({ error: "Contract not found" });
       }
 
-      let parsedDados = contract.dados;
-      try {
-        if (typeof contract.dados === 'string') {
-          parsedDados = JSON.parse(contract.dados);
-        }
-      } catch (e) {
-        console.error(`Error parsing contract ${contract.id}:`, e);
-      }
-
       res.json({
         ...contract,
-        data: parsedDados,
+        data: typeof contract.dados === 'string' ? JSON.parse(contract.dados) : contract.dados,
         onbase_status: !!contract.onbase_status
       });
     } catch (error) {

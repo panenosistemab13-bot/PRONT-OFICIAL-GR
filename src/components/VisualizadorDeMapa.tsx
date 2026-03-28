@@ -36,46 +36,30 @@ const VisualizadorDeMapa: React.FC<VisualizadorDeMapaProps> = ({
         setLoading(true);
         setError(false);
         
-        // 1. Busca na tabela 'maps' pelo destino com proteção try/catch
+        // 1. Busca na tabela 'maps' pelo destino
         const { data, error: fetchError } = await supabase
           .from('maps')
-          .select('*')
-          .eq('destination', destination)
+          .select('image_data')
+          .ilike('destination', `%${destination}%`)
+          .limit(1)
           .single();
 
-        if (fetchError || !data) {
-          console.warn("Mapa não encontrado para este destino:", destination);
+        if (fetchError || !data || !data.image_data) {
+          console.warn("Mapa não encontrado na tabela 'maps' para:", destination);
           
-          // Tenta busca por CPF se o destino falhar (conforme sugestão do usuário)
-          if (driverCpf) {
-            const { data: cpfData, error: cpfError } = await supabase
-              .from('maps')
-              .select('*')
-              .eq('driver_cpf', driverCpf)
-              .single();
-            
-            if (!cpfError && cpfData?.image_data) {
-              setMapImage(cpfData.image_data);
-              setLoading(false);
-              return;
-            }
-          }
-
           // 2. Fallback para o storage se não encontrar na tabela maps
           if (mapa_arquivo) {
             const { data: { publicUrl } } = supabase.storage.from('mapas-rotas').getPublicUrl(mapa_arquivo);
             setMapImage(publicUrl);
+          } else {
+            setError(true);
           }
-          setLoading(false);
-          return; // Para aqui sem travar o app
-        }
-
-        // Se encontrou na tabela, usamos os dados
-        if (data.image_data) {
+        } else {
           setMapImage(data.image_data);
         }
-      } catch (e) {
-        console.error("Erro crítico ao carregar mapa", e);
+      } catch (err) {
+        console.error("Erro ao buscar mapa:", err);
+        setError(true);
       } finally {
         setLoading(false);
       }

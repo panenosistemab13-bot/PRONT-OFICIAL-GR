@@ -163,26 +163,14 @@ export const AdminDashboard: React.FC = () => {
 
       if (error) throw error;
       
-      const mappedContracts = (data || []).map(row => {
-        let parsedDados = row.dados;
-        try {
-          if (typeof row.dados === 'string') {
-            parsedDados = JSON.parse(row.dados);
-          }
-        } catch (parseError) {
-          console.error(`Erro ao processar contrato ${row.id} (JSON malformado):`, parseError);
-        }
-
-        return {
-          id: row.id,
-          data: parsedDados,
-          termo: row.termo,
-          signature: row.signature,
-          signed_at: row.signed_at,
-          created_at: row.created_at,
-          onbase_status: row.onbase_status
-        };
-      });
+      const mappedContracts = (data || []).map(row => ({
+        id: row.id,
+        data: typeof row.dados === 'string' ? JSON.parse(row.dados) : row.dados,
+        signature: row.signature,
+        signed_at: row.signed_at,
+        created_at: row.created_at,
+        onbase_status: row.onbase_status
+      }));
       
       setContracts(mappedContracts);
     } catch (error) {
@@ -310,26 +298,16 @@ Também estou ciente de que o veículo não pode ser retirado do local de descar
       // SALVA DIRETO NO SUPABASE (Tabela contracts)
       const { error } = await supabase
         .from('contracts')
-        .insert([{ 
-          id: newId,
-          termo: termoGerado, // Texto do contrato
-          dados: contractData.dados, // O JSON com RG, CNH, etc.
-          created_at: new Date()
-        }]);
+        .insert([contractData]);
 
-      if (error) {
-        alert("Erro ao salvar: " + error.message);
-        throw error;
-      } else {
-        alert("Contrato assinado com sucesso!");
-        console.log("Salvo com sucesso!");
-      }
+      if (error) throw error;
+
+      alert("Link gerado e salvo com sucesso no Banco de Dados!");
       
       // Atualiza a lista local para mostrar o novo card
       const localContract = {
         id: newId,
         data: contractData.dados,
-        termo: termoGerado,
         onbase_status: false,
         created_at: contractData.created_at
       };

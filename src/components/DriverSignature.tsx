@@ -87,20 +87,10 @@ export const DriverSignature: React.FC = () => {
         if (error) throw error;
 
         if (data && data.dados) {
-          let parsedData = data.dados;
-          try {
-            if (typeof data.dados === 'string') {
-              parsedData = JSON.parse(data.dados);
-            }
-          } catch (parseError) {
-            console.error("Erro ao processar dados do contrato (JSON malformado):", parseError);
-            // Mantém parsedData como está (string ou objeto original)
-          }
-
+          const parsedData = typeof data.dados === 'string' ? JSON.parse(data.dados) : data.dados;
           setContract({
             id: data.id,
             data: parsedData,
-            termo: data.termo,
             signature: data.signature,
             signed_at: data.signed_at,
             created_at: data.created_at,
@@ -163,12 +153,7 @@ export const DriverSignature: React.FC = () => {
         })
         .eq('id', id);
 
-      if (error) {
-        alert("Erro ao salvar: " + error.message);
-        throw error;
-      }
-      
-      alert("Contrato assinado com sucesso!");
+      if (error) throw error;
       setSignatureData(signatureToSave);
       setSigned(true);
       setShowConfirmModal(false);
@@ -330,9 +315,9 @@ export const DriverSignature: React.FC = () => {
 
               <div className="prose prose-slate max-w-none">
                 <div className="text-sm leading-relaxed text-slate-600 space-y-6 text-justify bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                  {contract.termo || contract.data.termo_personalizado ? (
+                  {contract.data.termo_personalizado ? (
                     <p className="whitespace-pre-line font-medium text-slate-800">
-                      {contract.termo || contract.data.termo_personalizado}
+                      {contract.data.termo_personalizado}
                     </p>
                   ) : (
                     <>

@@ -41,13 +41,11 @@ export interface DriverData {
   dias?: string;
   mapa_arquivo?: string;
   paradas_proibidas?: string;
-  termo_personalizado?: string;
 }
 
 export interface Contract {
   id: string;
   data: DriverData;
-  termo?: string;
   signature?: string;
   signed_at?: string;
   created_at: string;
